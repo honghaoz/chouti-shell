@@ -5,6 +5,9 @@ pushd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 || exit 1
 
 # ===------ BEGIN ------===
 
+# OVERVIEW
+# This script installs shell-lib into /usr/local/lib
+
 # make /usr/local/lib dir if needed.
 if [[ ! -d /usr/local/lib ]]; then
   echo "➡️  Make /usr/local/lib..."
@@ -52,6 +55,7 @@ else
     sudo ln -s "$DESTINATION_DIR" "$SYMLINK_DIR"
   fi
 
+  # shellcheck disable=SC2181
   if [[ $? -eq 0 ]]; then
     echo "✅ Made a symbolic link: $SYMLINK_DIR -> $DESTINATION_DIR"
   else

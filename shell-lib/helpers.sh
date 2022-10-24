@@ -1,10 +1,13 @@
 #!/bin/bash
 
+# Clears current line.
 function clearLine() {
   printf '\033[1A\033[K'
 }
 
 # Run command by printing the command and its result.
+# Example:
+#   runCommand "ls -l"
 function runCommand() {
   commandToRun=$*
   echo "➜ $commandToRun"
@@ -20,6 +23,7 @@ function runCommand() {
   echo ""
 }
 
+# Ask for confirmation before proceeding.
 function promptBeforeRun() {
   PROMPT="$1"
   COMMAND="$2"
@@ -65,12 +69,14 @@ function promptBeforeRun() {
   done
 }
 
+# Pause the script and wait for user to press enter.
 function pause() {
   PROMPT="$1"
   read -r -p "➡️  $PROMPT" key
 }
 
-# get the absolute path from a relative path.
+# Get the absolute path from a relative path.
+# If there's no argument, use current directory.
 function absolutePath() {
   if [[ -d "$1" ]]; then
     currentPath="$(pwd)" # save current path
@@ -98,6 +104,7 @@ function rotatedFilePath() {
   echo "$NEW_FILE_PATH"
 }
 
+# Make a symbolic link with backup.
 # Example:
 #   makeSymbolicLink "$HOME/.tmux.conf" "$dotfilesPath/tmux/tmux.conf" 
 function makeSymbolicLink() {
