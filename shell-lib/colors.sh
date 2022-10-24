@@ -55,76 +55,76 @@ fi
 
 # echo
 
-function echo_bold {
+function echoBold {
   echo "${BOLD}$1${NORMAL}"
 }
 
-function echo_red {
+function echoRed {
   echo "${RED}$1${NORMAL}"
 }
 
-function echo_green {
+function echoGreen {
   echo "${GREEN}$1${NORMAL}"
 }
 
-function echo_yellow {
+function echoYellow {
   echo "${YELLOW}$1${NORMAL}"
 }
 
-function echo_blue {
+function echoBlue {
   echo "${BLUE}$1${NORMAL}"
 }
 
-function echo_magenta {
+function echoMagenta {
   echo "${MEGENTA}$1${NORMAL}"
 }
 
-function echo_cyan {
+function echoCyan {
   echo "${CYAN}$1${NORMAL}"
 }
 
-function echo_black {
+function echoBlack {
   echo "${BLACK}$1${NORMAL}"
 }
 
-function echo_white {
+function echoWhite {
   echo "${WHITE}$1${NORMAL}"
 }
 
 # print
 
-function print_bold {
+function printBold {
   echo -n "${BOLD}$1${NORMAL}"
 }
 
-function print_red {
+function printRed {
   echo -n "${RED}$1${NORMAL}"
 }
 
-function print_green {
+function printGreen {
   echo -n "${GREEN}$1${NORMAL}"
 }
 
-function print_yellow {
+function printYellow {
   echo -n "${YELLOW}$1${NORMAL}"
 }
 
-function print_blue {
+function printBlue {
   echo -n "${BLUE}$1${NORMAL}"
 }
 
-function print_magenta {
+function printMagenta {
   echo -n "${MEGENTA}$1${NORMAL}"
 }
 
-function print_cyan {
+function printCyan {
   echo -n "${CYAN}$1${NORMAL}"
 }
 
-function print_black {
+function printBlack {
   echo -n "${BLACK}$1${NORMAL}"
 }
 
-function print_white {
+function printWhite {
   echo -n "${WHITE}$1${NORMAL}"
 }

@@ -5,6 +5,11 @@ function clearLine() {
   printf '\033[1A\033[K'
 }
 
+# Check if a command exists.
+function commandExists() {
+  [ -x "$(command -v "$1")" ];
+}
+
 # Run command by printing the command and its result.
 # Example:
 #   runCommand "ls -l"
@@ -85,6 +90,23 @@ function absolutePath() {
     cd "$currentPath" || exit 1 # restore to original path
   else
     echo "$(cd "$(dirname "$1")" && pwd -P)/$(basename "$1")"
+  fi
+}
+
+# Get absolute path
+# Example:
+#   - `absolutePath2 .`
+# References:
+#   - https://stackoverflow.com/a/51264222/3164091
+#   - https://stackoverflow.com/a/31605674/3164091
+function absolutePath2 {
+  local target="$1"
+  if [[ "$target" == "." ]]; then
+    pwd
+  elif [[ "$target" == ".." ]]; then
+    dirname "$(pwd)"
+  else
+    echo "$(cd "$(dirname "$1")" || exit; pwd)/$(basename "$1")"
   fi
 }
 
