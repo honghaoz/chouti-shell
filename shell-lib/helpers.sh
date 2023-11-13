@@ -130,8 +130,14 @@ function rotatedFilePath() {
 # Example:
 #   makeSymbolicLink "$HOME/.tmux.conf" "$dotfilesPath/tmux/tmux.conf" 
 function makeSymbolicLink() {
-  TARGET_FILE_PATH=$1 # the link
-  SOURCE_FILE_PATH=$2 # the file to link to
+  TARGET_FILE_PATH=$1 # the symbolic link file
+  SOURCE_FILE_PATH=$2 # the file to link to, aka destination
+
+  # if source file doesn't exist, skip
+  if [[ ! -e "$SOURCE_FILE_PATH" ]]; then
+    echo "⚠️  Source file doesn't exist: $SOURCE_FILE_PATH"
+    return
+  fi
 
   if [[ -e "$TARGET_FILE_PATH" && ! -L "$TARGET_FILE_PATH" ]]; then
     # is regular file or dir
@@ -156,6 +162,12 @@ function makeSymbolicLink() {
   fi
 
   if [[ $SHOULD_CREATE_LINK == true ]]; then
+    # create intermediate directories if needed
+    if [[ ! -d "$(dirname "$TARGET_FILE_PATH")" ]]; then
+      echo "Creating directory: $(dirname "$TARGET_FILE_PATH")"
+      mkdir -p "$(dirname "$TARGET_FILE_PATH")" || return
+    fi
+    # create symlink
     echo "Making symlink: $TARGET_FILE_PATH -> $SOURCE_FILE_PATH"
     ln -s "$SOURCE_FILE_PATH" "$TARGET_FILE_PATH"
   else
