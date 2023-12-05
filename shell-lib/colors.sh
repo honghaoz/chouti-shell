@@ -1,32 +1,32 @@
 #!/bin/bash
 
-COLOR_RESET=$'\e[0m'
+export COLOR_RESET=$'\e[0m'
 
-COLOR_BOLD=$'\e[1m'
-COLOR_UNDERLINED=$'\e[4m'
-COLOR_BLINK=$'\e[5m'
-COLOR_REVERSE=$'\e[7m'
+export COLOR_BOLD=$'\e[1m'
+export COLOR_UNDERLINED=$'\e[4m'
+export COLOR_BLINK=$'\e[5m'
+export COLOR_REVERSE=$'\e[7m'
 
 # Foreground Color
-COLOR_BLACK=$'\e[30m'
-COLOR_RED=$'\e[31m'
-COLOR_GREEN=$'\e[32m'
-COLOR_BROWN=$'\e[33m'
-COLOR_BLUE=$'\e[34m'
-COLOR_PURPLE=$'\e[35m'
-COLOR_CYAN=$'\e[36m'
-COLOR_LIGHTGRAY=$'\e[37m'
-COLOR_YELLOW=$'\e[33m'
+export COLOR_BLACK=$'\e[30m'
+export COLOR_RED=$'\e[31m'
+export COLOR_GREEN=$'\e[32m'
+export COLOR_BROWN=$'\e[33m'
+export COLOR_BLUE=$'\e[34m'
+export COLOR_PURPLE=$'\e[35m'
+export COLOR_CYAN=$'\e[36m'
+export COLOR_LIGHTGRAY=$'\e[37m'
+export COLOR_YELLOW=$'\e[33m'
 
 # Background Color
-COLOR_BLACK_U=$'\e[40m'
-COLOR_RED_U=$'\e[41m'
-COLOR_GREEN_U=$'\e[42m'
-COLOR_BROWN_U=$'\e[43m'
-COLOR_BLUE_U=$'\e[44m'
-COLOR_PURPLE_U=$'\e[45m'
-COLOR_CYAN_U=$'\e[46m'
-COLOR_LIGHTGRAY_U=$'\e[47m'
+export COLOR_BLACK_U=$'\e[40m'
+export COLOR_RED_U=$'\e[41m'
+export COLOR_GREEN_U=$'\e[42m'
+export COLOR_BROWN_U=$'\e[43m'
+export COLOR_BLUE_U=$'\e[44m'
+export COLOR_PURPLE_U=$'\e[45m'
+export COLOR_CYAN_U=$'\e[46m'
+export COLOR_LIGHTGRAY_U=$'\e[47m'
 
 # define colors if TERM is good to handle them
 if [[ -t 1 ]]; then
@@ -55,6 +55,7 @@ fi
 
 # echo
 
+# Example: echoBold "Hello World"
 function echoBold {
   echo "${BOLD}$1${NORMAL}"
 }

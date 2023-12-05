@@ -126,10 +126,23 @@ function rotatedFilePath() {
   echo "$NEW_FILE_PATH"
 }
 
-# Make a symbolic link with backup.
-# Example:
-#   makeSymbolicLink "$HOME/.tmux.conf" "$dotfilesPath/tmux/tmux.conf" 
 function makeSymbolicLink() {
+  printHelp () {
+    echo "$(tput bold)OVERVIEW:$(tput sgr0) Make symbolic link with backup support."
+		echo ""
+    echo "$(tput bold)USAGE:$(tput sgr0)"
+		echo "  make-symbolic-link ${COLOR_GREEN}[symbolic-path]${COLOR_RESET} ${COLOR_GREEN}[destination-path]${COLOR_RESET}"
+		echo ""
+		echo "$(tput bold)EXAMPLES:$(tput sgr0)"
+		echo "  1. make-symbolic-link ${COLOR_GREEN}$HOME/Desktop/Downloads${COLOR_RESET} ${COLOR_GREEN}$HOME/Downloads${COLOR_RESET}"
+	}
+
+  if [[ $1 == "--help" || $1 == "-h" ]]
+	then
+		printHelp
+		return 0
+	fi
+
   TARGET_FILE_PATH=$1 # the symbolic link file
   SOURCE_FILE_PATH=$2 # the file to link to, aka destination
 
@@ -149,6 +162,7 @@ function makeSymbolicLink() {
   SHOULD_CREATE_LINK=true
   if [[ -L "$TARGET_FILE_PATH" ]]; then
     # already have symlink
+    # LINK_TARGET_PATH=$(readlink "$SYMLINK_DIR") # doesn't work on macOS
     LINK_TARGET_PATH=$(ls -l $TARGET_FILE_PATH | awk '{print $NF}')
     if [[ $LINK_TARGET_PATH == "$SOURCE_FILE_PATH" ]]; then
       # already linked
