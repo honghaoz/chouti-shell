@@ -30,8 +30,8 @@ SYMLINK_DIR="/usr/local/lib/shell-lib"
 if [[ -d "$SYMLINK_DIR" ]]; then
   if [[ -L "$SYMLINK_DIR" ]]; then
     # is symlink
-    # SYMLINK_TARGET=$(readlink "$SYMLINK_DIR") # doesn't work on macOS
-    SYMLINK_TARGET=$(ls -l $SYMLINK_DIR | awk '{print $NF}')
+    SYMLINK_TARGET=$(readlink -f "$SYMLINK_DIR")
+    # SYMLINK_TARGET=$(ls -l $SYMLINK_DIR | awk '{print $NF}')
     if [[ $SYMLINK_TARGET == "$DESTINATION_DIR" ]]; then
       # already linked
       echo "✅ shell-lib is already installed."

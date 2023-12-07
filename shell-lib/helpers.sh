@@ -162,8 +162,8 @@ function makeSymbolicLink() {
   SHOULD_CREATE_LINK=true
   if [[ -L "$TARGET_FILE_PATH" ]]; then
     # already have symlink
-    # LINK_TARGET_PATH=$(readlink "$SYMLINK_DIR") # doesn't work on macOS
-    LINK_TARGET_PATH=$(ls -l $TARGET_FILE_PATH | awk '{print $NF}')
+    LINK_TARGET_PATH=$(readlink -f "$TARGET_FILE_PATH")
+    # LINK_TARGET_PATH=$(ls -l $TARGET_FILE_PATH | awk '{print $NF}')
     if [[ $LINK_TARGET_PATH == "$SOURCE_FILE_PATH" ]]; then
       # already linked
       SHOULD_CREATE_LINK=false
