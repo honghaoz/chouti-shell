@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# https://linux.101hacks.com/ps1-examples/prompt-color-using-tput/
+# OVERVIEW:
+# This file defines functions to print colored text in terminal.
 
 # define colors if TERM is good to handle them
 if [[ -t 1 ]]; then
@@ -65,126 +66,126 @@ fi
 
 # echo
 
-function echoBold {
+function echo-bold {
   echo "${BOLD}$1${NORMAL}"
 }
 
-function echoDim {
+function echo-dim {
   echo "${DIM}$1${NORMAL}"
 }
 
-function echoUnderline {
+function echo-underline {
   echo "${UNDERLINE}$1${NORMAL}"
 }
 
-function echoBlink {
+function echo-blink {
   echo "${BLINK}$1${NORMAL}"
 }
 
-function echoReverse {
+function echo-reverse {
   echo "${REVERSE}$1${NORMAL}"
 }
 
-function echoHidden {
+function echo-hidden {
   echo "${HIDDEN}$1${NORMAL}"
 }
 
-function echoBlack {
+function echo-black {
   echo "${BLACK}$1${NORMAL}"
 }
 
-function echoRed {
+function echo-red {
   echo "${RED}$1${NORMAL}"
 }
 
-function echoGreen {
+function echo-green {
   echo "${GREEN}$1${NORMAL}"
 }
 
-function echoYellow {
+function echo-yellow {
   echo "${YELLOW}$1${NORMAL}"
 }
 
-function echoBlue {
+function echo-blue {
   echo "${BLUE}$1${NORMAL}"
 }
 
-function echoMagenta {
+function echo-magenta {
   echo "${MEGENTA}$1${NORMAL}"
 }
 
-function echoCyan {
+function echo-cyan {
   echo "${CYAN}$1${NORMAL}"
 }
 
-function echoWhite {
+function echo-white {
   echo "${WHITE}$1${NORMAL}"
 }
 
-function echoLightGray {
+function echo-lightgray {
   echo "${LIGHTGRAY}$1${NORMAL}"
 }
 
 # print without the trailing newline
 
-function printBold {
+function print-bold {
   echo -n "${BOLD}$1${NORMAL}"
 }
 
-function printDim {
+function print-dim {
   echo -n "${DIM}$1${NORMAL}"
 }
 
-function printUnderline {
+function print-underline {
   echo -n "${UNDERLINE}$1${NORMAL}"
 }
 
-function printBlink {
+function print-blink {
   echo -n "${BLINK}$1${NORMAL}"
 }
 
-function printReverse {
+function print-reverse {
   echo -n "${REVERSE}$1${NORMAL}"
 }
 
-function printBlack {
+function print-hidden {
   echo -n "${BLACK}$1${NORMAL}"
 }
 
-function printRed {
+function print-black {
   echo -n "${RED}$1${NORMAL}"
 }
 
-function printGreen {
+function print-red {
   echo -n "${GREEN}$1${NORMAL}"
 }
 
-function printYellow {
+function print-green {
   echo -n "${YELLOW}$1${NORMAL}"
 }
 
-function printBlue {
+function print-yellow {
   echo -n "${BLUE}$1${NORMAL}"
 }
 
-function printMagenta {
+function print-blue {
   echo -n "${MEGENTA}$1${NORMAL}"
 }
 
-function printCyan {
+function print-magenta {
   echo -n "${CYAN}$1${NORMAL}"
 }
 
-function printWhite {
+function print-cyan {
   echo -n "${WHITE}$1${NORMAL}"
 }
 
-function printLightGray {
+function print-white {
   echo -n "${LIGHTGRAY}$1${NORMAL}"
 }
 
 # print all colors
-function printColors() {
+function print-colors() {
   echo "NORMAL"
   echo "${BOLD}BOLD${NORMAL}\t\t\${BOLD}BOLD\${NORMAL}"
   echo "${DIM}DIM${NORMAL}\t\t\${DIM}DIM\${NORMAL}"
@@ -217,3 +218,6 @@ function printColors() {
   echo "${BG_MEGENTA}BG_MEGENTA${NORMAL}\t\${BG_MEGENTA}BG_MEGENTA\${NORMAL}"
   echo "${BG_CYAN}BG_CYAN${NORMAL}\t\t\${BG_CYAN}BG_CYAN\${NORMAL}"
 }
+
+# References:
+# https://linux.101hacks.com/ps1-examples/prompt-color-using-tput/
