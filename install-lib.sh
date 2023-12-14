@@ -31,7 +31,6 @@ if [[ -d "$SYMLINK_DIR" ]]; then
   if [[ -L "$SYMLINK_DIR" ]]; then
     # is symlink
     SYMLINK_TARGET=$(readlink -f "$SYMLINK_DIR")
-    # SYMLINK_TARGET=$(ls -l $SYMLINK_DIR | awk '{print $NF}')
     if [[ $SYMLINK_TARGET == "$DESTINATION_DIR" ]]; then
       # already linked
       echo "✅ shell-lib is already installed."
@@ -57,7 +56,7 @@ else
 
   # shellcheck disable=SC2181
   if [[ $? -eq 0 ]]; then
-    echo "✅ Made a symbolic link: $SYMLINK_DIR -> $DESTINATION_DIR"
+    echo "✅ shell-lib is already installed. Made a symbolic link: $SYMLINK_DIR -> $DESTINATION_DIR"
   else
     echo "🛑 Failed to install shell-lib."
   fi

@@ -38,6 +38,7 @@ function run-command() {
 #   - $2: [optional] Command to run if user answers yes.
 #   - $3: [optional] Command to run if user answers no.
 #   - $4: [optional] Command to run if user fails to answer after 3 attempts.
+# - Exit: 0 if user answers yes, 1 otherwise.
 # - Examples:
 #   prompt "Do you want to run 'ls -l'?" "ls -l"
 #   prompt "Do you want to run 'ls -l'?" "ls -l" "ls"
@@ -57,6 +58,8 @@ function prompt() {
   local NO_COMMAND="$3"
   local SKIP_COMMAND="$4"
 
+  local REPLIED_YES=false
+
   local REPLY_COUNT=0
   while [[ $REPLY_COUNT -lt 3 ]]; do
     echo -n "➡️  $PROMPT [y/n] "
@@ -67,6 +70,7 @@ function prompt() {
       [Yy]* )
         echo ""
         eval "$YES_COMMAND"
+        REPLIED_YES=true
         break
         ;;
       [Nn]* )
@@ -95,6 +99,12 @@ function prompt() {
     if [[ -n "$SKIP_COMMAND" ]]; then
       eval "$SKIP_COMMAND"
     fi
+  fi
+
+  if [[ $REPLIED_YES == true ]]; then
+    return 0
+  else
+    return 1
   fi
 }
 

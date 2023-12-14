@@ -1,0 +1,244 @@
+#!/bin/bash
+
+print_help() {
+  echo "OVERVIEW: $(basename "$0") - Build a binary for the specified Swift package.
+
+USAGE: $(basename "$0") [--arch arm64|x86_64|universal] [<swift-package-path>] [--install [<path>]]
+
+ARGUMENTS:
+  [<swift-package-path>]  Path to the Swift package to build. If not specified, the command  uses the current directory.
+
+OPTIONS:
+  --arch <architecture>   Specify the architecture for the binary. Options are 'arm64', 'x86_64', or 'universal'. 
+                          If not specified, the build uses the current architecture of the environment.
+
+  --install [<path>]      Installs the built binary to the specified path. If a path is provided, the binary will be 
+                          installed to the specified path. If no path is provided, the binary will be installed to 
+                          /usr/local/bin.
+
+  -f, --force             Force the command to overwrite existing files.
+
+  -h, --help              Display this help message.
+
+  -v, --version           Print the version information.
+
+EXAMPLES:
+
+  * swift-build
+    Builds a binary for the Swift package located at the current directory, using the current system architecture.
+
+  * swift-build --arch arm64 /path/to/package
+    Builds a binary for the Swift package located at /path/to/package, using arm64 architecture.
+
+  * swift-build --install path/to/install /path/to/package
+    Builds a binary for the Swift package located at /path/to/package, using the current system architecture. And 
+    installs the binary to path/to/install.
+"
+}
+
+print_version() {
+  echo "0.1.0"
+}
+
+#printHelp if no arguments
+if [[ $# -eq 0 ]]; then
+  print_help
+  exit 1
+fi
+
+# Constants
+DEFAULT_INSTALL_PATH="/usr/local/bin"
+
+# Variables
+architecture=""
+architecture_set=false
+package_dir=""
+package_dir_set=false
+install_dir=""
+force=false
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+  --arch)
+    architecture="$2"
+    if [[ $architecture != "arm64" && $architecture != "x86_64" && $architecture != "universal" ]]; then
+      echo "Unsupported architecture: $architecture"
+      exit 1
+    fi
+    architecture_set=true
+    shift # past argument
+    shift # past value
+    ;;
+  --install)
+    if [[ -n $2 && ${2:0:1} != '-' ]]; then # if there is an argument and that it doesn't start with a "-"
+      install_dir="$2"
+      # exit if the path is pointing to a file
+      if [[ -f $install_dir ]]; then
+        echo "Error: $install_dir is a valid install path."
+        exit 1
+      fi
+      shift # past value
+    else
+      install_dir="$DEFAULT_INSTALL_PATH"
+    fi
+    shift # past argument
+    ;;
+  --force | -f)
+    force=true
+    shift # past argument
+    ;;
+  --help | -h)
+    print_help
+    exit 0
+    ;;
+  --version | -v)
+    print_version
+    exit 0
+    ;;
+  *)
+    if [[ -n $1 && ${1:0:1} != '-' ]]; then # if there is an argument and that it doesn't start with a "-"
+      if [[ $package_dir_set == false ]]; then
+        package_dir="$1"
+        package_dir_set=true
+      else
+        echo "Unexpected argument: $1"
+        exit 1
+      fi
+      shift # past argument
+    else
+      echo "Unknown option: $1"
+      exit 1
+    fi
+    ;;
+  esac
+done
+
+if [[ $package_dir_set == false ]]; then
+  package_dir=$(pwd)
+fi
+package_dir=$(realpath "$package_dir")
+
+if [[ $architecture_set == false ]]; then
+  architecture=$(uname -m)
+fi
+
+if [[ ! -f "$package_dir/Package.swift" ]]; then
+  echo "Error: $package_dir is not a Swift package."
+  exit 1
+fi
+
+should_install=false
+if [[ -n $install_dir ]]; then
+  should_install=true
+fi
+if [[ $should_install == true ]]; then
+  install_dir=$(realpath "$install_dir")
+fi
+
+# sanity check
+# architecture
+
+echo "ℹ️  Build configuration:"
+echo "- Swift package: ${COLOR_CYAN}$package_dir${COLOR_RESET}"
+echo "- Architecture: ${COLOR_CYAN}$architecture${COLOR_RESET}"
+if [[ $should_install == true ]]; then
+  echo "- Install path: ${COLOR_CYAN}$install_dir${COLOR_RESET}"
+fi
+
+echo ""
+if [[ $architecture == "universal" ]]; then
+  echo "➡️  Building universal binary..."
+  swift build --package-path "$package_dir" -c release --arch arm64 --arch x86_64
+else
+  echo "➡️  Building for $architecture..."
+  swift build --package-path "$package_dir" -c release --arch "$architecture"
+fi
+
+# shellcheck disable=SC2181
+if [[ $? -ne 0 ]]; then
+  echo "🛑 swift build failed."
+  exit 1
+fi
+
+current_dir=$(pwd) # store current dir for later use.
+cd "$package_dir" || (echo "Failed to navigate to $package_dir" && exit 1)
+
+if [[ ! -d "Products" ]]; then
+  mkdir -p ./Products
+  echo "➡️  Created ./Products directory"
+fi
+
+if [[ $architecture == "universal" ]]; then
+  release_dir="./.build/apple/Products/Release"
+elif [[ $architecture == "arm64" ]]; then
+  release_dir="./.build/arm64-apple-macosx/release"
+elif [[ $architecture == "x86_64" ]]; then
+  release_dir="./.build/x86_64-apple-macosx/release"
+fi
+
+cd "$release_dir" || (echo "Failed to navigate to $release_dir" && exit 1)
+executable_path=$(realpath "$(find . -maxdepth 1 -perm -111 -type f)")
+executable_name=$(basename "$executable_path")
+
+echo ""
+echo "➡️  Strip $executable_name"
+if ! strip "$executable_path"; then
+  echo "🛑 Failed to strip $executable_name"
+  exit 1
+fi
+
+echo ""
+echo "➡️  Copying $executable_name into ${COLOR_CYAN}$package_dir/Products/$executable_name${COLOR_RESET}"
+# if file exists, prompt for confirmation
+if [[ -f "$package_dir/Products/$executable_name" && $force == false ]]; then
+  echo "⚠️  A binary already exists at: ${COLOR_YELLOW}$package_dir/Products/$executable_name${COLOR_RESET}"
+
+  read -p "Do you want to replace it? [y/n] " -n 1 -r
+  echo
+  tput cuu 1 && tput el
+  tput cuu 1 && tput el
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "🛑 Aborted."
+    exit 1
+  fi
+fi
+cp -f "$executable_path" "$package_dir/Products/$executable_name"
+echo "✅ Copied $executable_name into ${COLOR_GREEN}$package_dir/Products/$executable_name${COLOR_RESET}"
+
+echo ""
+# verify the binary has the correct architecture
+if [[ $architecture == "universal" ]]; then
+  if ! lipo "$package_dir/Products/$executable_name" -verify_arch x86_64 arm64; then
+    echo "🛑 The binary does not have the correct architecture."
+    exit 1
+  fi
+else
+  if ! lipo "$package_dir/Products/$executable_name" -verify_arch "$architecture"; then
+    echo "🛑 The binary does not have the correct architecture."
+    exit 1
+  fi
+fi
+
+if [[ $should_install == true ]]; then
+  echo "➡️  Installing $executable_name to ${COLOR_CYAN}$install_dir/$executable_name${COLOR_RESET}"
+  # if file exists, prompt for confirmation
+  if [[ -f "$install_dir/$executable_name" && $force == false ]]; then
+    echo "⚠️  A binary already exists at: ${COLOR_YELLOW}$install_dir/$executable_name${COLOR_RESET}"
+
+    read -p "Do you want to replace it? [y/n] " -n 1 -r
+    echo
+    tput cuu 1 && tput el
+    tput cuu 1 && tput el
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo "🛑 Aborted."
+      exit 1
+    fi
+  fi
+  install -m 755 "$package_dir/Products/$executable_name" "$install_dir"
+  echo "✅ Installed $executable_name to ${COLOR_GREEN}$install_dir/$executable_name${COLOR_RESET}"
+fi
+
+cd "$current_dir" || (echo "Failed to navigate to $current_dir" && exit 1)

@@ -1,20 +1,18 @@
 # shell-lib
-Some convenient shell functions
+Shell helpers and binaries.
 
 ## Installation
 1. Clone this repo to your local machine.
 
     For example, clone this repo to `~/.shell-lib`:
     ```bash
-    cd ~
-    git clone https://github.com/honghaoz/shell-lib.git .shell-lib
+    git clone https://github.com/honghaoz/shell-lib.git ~/.shell-lib
     ```
 
 2. Run `install.sh` to install.
 
     ```bash
-    cd ~/.shell-lib
-    ./install.sh
+    ~/.shell-lib/install.sh
     ```
 
     This will create a symlink at `/usr/local/lib/shell-lib` pointing to `~/.shell-lib/shell-lib`.
@@ -34,5 +32,5 @@ Some convenient shell functions
     # shellcheck disable=SC1091
     source "/usr/local/lib/shell-lib/lib.sh" || exit 1
 
-    runCommand "echo 'hello world'"
+    run-command "echo 'hello world'"
     ```
