@@ -1,67 +1,134 @@
 #!/bin/bash
 
-# TODO: make this a script file.
+print_help() {
+  echo "$(tput bold)OVERVIEW:$(tput sgr0) $(basename "$0") - Make symbolic link.
 
+$(tput bold)USAGE:$(tput sgr0) $(basename "$0") <destination-path> <symbolic-link-path>
 
-function makeSymbolicLink() {
-  printHelp () {
-    echo "$(tput bold)OVERVIEW:$(tput sgr0) Make symbolic link with backup support."
-		echo ""
-    echo "$(tput bold)USAGE:$(tput sgr0)"
-		echo "  make-symbolic-link ${COLOR_GREEN}[symbolic-path]${COLOR_RESET} ${COLOR_GREEN}[destination-path]${COLOR_RESET}"
-		echo ""
-		echo "$(tput bold)EXAMPLES:$(tput sgr0)"
-		echo "  1. make-symbolic-link ${COLOR_GREEN}$HOME/Desktop/Downloads${COLOR_RESET} ${COLOR_GREEN}$HOME/Downloads${COLOR_RESET}"
-	}
+$(tput bold)ARGUMENTS:$(tput sgr0)
 
-  if [[ $1 == "--help" || $1 == "-h" ]]
-	then
-		printHelp
-		return 0
-	fi
+  destination-path     Path to the file to link to, aka destination.
+  symbolic-link-path   Path to the symbolic link file.
 
-  TARGET_FILE_PATH=$1 # the symbolic link file
-  SOURCE_FILE_PATH=$2 # the file to link to, aka destination
+$(tput bold)OPTIONS:$(tput sgr0)
 
-  # if source file doesn't exist, skip
-  if [[ ! -e "$SOURCE_FILE_PATH" ]]; then
-    echo "⚠️  Source file doesn't exist: $SOURCE_FILE_PATH"
+  --no-backup          Overwrite existing symbolic link path without backup.
+
+  -h, --help           Display this help message.
+
+  -v, --version        Print the version information.
+
+$(tput bold)EXAMPLES:$(tput sgr0)
+
+  $(tput setaf 2)- make-symbolic-link path/to/destination path/to/symlink$(tput sgr0)
+    Make a symbolic link at path/to/symlink that points to path/to/destination.
+
+  $(tput setaf 2)- make-symbolic-link --no-backup path/to/destination path/to/symlink$(tput sgr0)
+    Make a symbolic link at path/to/symlink that points to path/to/destination, and overwrite existing symbolic link
+    without backup.
+"
+}
+
+print_version() {
+  echo "0.1.0"
+}
+
+# print help if not enough arguments
+if [[ $# -lt 2 ]]; then
+  print_help
+  exit 1
+fi
+
+source "$(dirname "${BASH_SOURCE[0]}")/../shell-lib/utilities.sh"
+
+destination_path=""
+symlink_path=""
+no_backup=false
+
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+  --no-backup)
+    no_backup=true
+    shift # past argument
+    ;;
+  --help | -h)
+    print_help
+    exit 0
+    ;;
+  --version | -v)
+    print_version
+    exit 0
+    ;;
+  *)
+    if [[ -n $1 && ${1:0:1} != '-' ]]; then # if there is an argument and that it doesn't start with a "-"
+      if [[ $destination_path == "" ]]; then
+        destination_path="$1"
+      elif [[ $symlink_path == "" ]]; then
+        symlink_path="$1"
+      else
+        echo "Unexpected argument: $1"
+        exit 1
+      fi
+      shift # past argument
+    else
+      echo "Unknown option: $1"
+      exit 1
+    fi
+    ;;
+  esac
+done
+
+# if destination path doesn't exist, skip
+if [[ ! -e "$destination_path" ]]; then
+  echo "🛑  Destination path doesn't exist: $destination_path"
+  exit 1
+fi
+
+function backup-symlink-path() {
+  if [[ $no_backup == true ]]; then
     return
   fi
 
-  if [[ -e "$TARGET_FILE_PATH" && ! -L "$TARGET_FILE_PATH" ]]; then
-    # is regular file or dir
-    BACKUP_PATH=$(rotatedFilePath "$TARGET_FILE_PATH" "-backup")
-    echo "Rename '$TARGET_FILE_PATH' to '$BACKUP_PATH'"
-    mv "$TARGET_FILE_PATH" "$BACKUP_PATH"
-  fi
-
-  SHOULD_CREATE_LINK=true
-  if [[ -L "$TARGET_FILE_PATH" ]]; then
-    # already have symlink
-    LINK_TARGET_PATH=$(readlink -f "$TARGET_FILE_PATH")
-    # LINK_TARGET_PATH=$(ls -l $TARGET_FILE_PATH | awk '{print $NF}')
-    if [[ $LINK_TARGET_PATH == "$SOURCE_FILE_PATH" ]]; then
-      # already linked
-      SHOULD_CREATE_LINK=false
-    else
-      # different link
-      BACKUP_PATH=$(rotatedFilePath "$TARGET_FILE_PATH" "-backup")
-      echo "Rename '$TARGET_FILE_PATH' to '$BACKUP_PATH'"
-      mv "$TARGET_FILE_PATH" "$BACKUP_PATH"
-    fi
-  fi
-
-  if [[ $SHOULD_CREATE_LINK == true ]]; then
-    # create intermediate directories if needed
-    if [[ ! -d "$(dirname "$TARGET_FILE_PATH")" ]]; then
-      echo "Creating directory: $(dirname "$TARGET_FILE_PATH")"
-      mkdir -p "$(dirname "$TARGET_FILE_PATH")" || return
-    fi
-    # create symlink
-    echo "Making symlink: $TARGET_FILE_PATH -> $SOURCE_FILE_PATH"
-    ln -s "$SOURCE_FILE_PATH" "$TARGET_FILE_PATH"
-  else
-    echo "✅ Already linked: ${COLOR_CYAN}$TARGET_FILE_PATH${COLOR_RESET} -> $SOURCE_FILE_PATH"
-  fi
+  backup_path=$(rotate-path "$symlink_path" "-backup")
+  echo "➡️  Rename '$symlink_path' to '$backup_path'"
+  mv "$symlink_path" "$backup_path"
+  clear-line
+  echo "✅ Renamed '$symlink_path' to '$backup_path'"
 }
+
+if [[ -e "$symlink_path" && ! -L "$symlink_path" ]]; then
+  # symlink path is a regular file or dir
+  backup-symlink-path
+fi
+
+should_create_link=true
+if [[ -L "$symlink_path" ]]; then
+  # already have symlink
+  link_destination_path=$(readlink -f "$symlink_path")
+  if [[ $link_destination_path == "$destination_path" ]]; then
+    # already linked
+    should_create_link=false
+  else
+    # different links
+    backup-symlink-path
+  fi
+fi
+
+if [[ $should_create_link == true ]]; then
+  # create intermediate directories if needed
+  if [[ ! -d "$(dirname "$symlink_path")" ]]; then
+    echo "➡️  Creating directory: $(dirname "$symlink_path")"
+    mkdir -p "$(dirname "$symlink_path")" || exit 1
+    clear-line
+    echo "✅ Created directory: $(dirname "$symlink_path")"
+  fi
+  # create symlink
+  echo "➡️  Making symlink: $(tput setaf 6)$symlink_path$(tput sgr0) -> $destination_path"
+  ln -s "$destination_path" "$symlink_path"
+  clear-line
+  echo "✅ Created symlink: $(tput setaf 6)$symlink_path$(tput sgr0) -> $destination_path"
+else
+  echo "✅ Already linked: $(tput setaf 6)$symlink_path$(tput sgr0) -> $destination_path"
+fi

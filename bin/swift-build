@@ -1,14 +1,16 @@
 #!/bin/bash
 
 print_help() {
-  echo "OVERVIEW: $(basename "$0") - Build a binary for the specified Swift package.
+  echo "$(tput bold)OVERVIEW:$(tput sgr0) $(basename "$0") - Build a binary for the specified Swift package.
 
-USAGE: $(basename "$0") [--arch arm64|x86_64|universal] [<swift-package-path>] [--install [<path>]]
+$(tput bold)USAGE:$(tput sgr0) $(basename "$0") [--arch arm64|x86_64|universal] [<swift-package-path>] [--install [<path>]]
 
-ARGUMENTS:
-  [<swift-package-path>]  Path to the Swift package to build. If not specified, the command  uses the current directory.
+$(tput bold)ARGUMENTS:$(tput sgr0)
 
-OPTIONS:
+  [<swift-package-path>]  Path to the Swift package to build. If not specified, the command uses the current directory.
+
+$(tput bold)OPTIONS:$(tput sgr0)
+
   --arch <architecture>   Specify the architecture for the binary. Options are 'arm64', 'x86_64', or 'universal'. 
                           If not specified, the build uses the current architecture of the environment.
 
@@ -22,15 +24,15 @@ OPTIONS:
 
   -v, --version           Print the version information.
 
-EXAMPLES:
+$(tput bold)EXAMPLES:$(tput sgr0)
 
-  * swift-build
+  $(tput setaf 2)- swift-build$(tput sgr0)
     Builds a binary for the Swift package located at the current directory, using the current system architecture.
 
-  * swift-build --arch arm64 /path/to/package
+  $(tput setaf 2)- swift-build --arch arm64 /path/to/package$(tput sgr0)
     Builds a binary for the Swift package located at /path/to/package, using arm64 architecture.
 
-  * swift-build --install path/to/install /path/to/package
+  $(tput setaf 2)- swift-build --install path/to/install /path/to/package$(tput sgr0)
     Builds a binary for the Swift package located at /path/to/package, using the current system architecture. And 
     installs the binary to path/to/install.
 "
@@ -40,7 +42,7 @@ print_version() {
   echo "0.1.0"
 }
 
-#printHelp if no arguments
+# print help if no arguments
 if [[ $# -eq 0 ]]; then
   print_help
   exit 1
