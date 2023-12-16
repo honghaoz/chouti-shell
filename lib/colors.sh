@@ -3,6 +3,11 @@
 # OVERVIEW:
 # This file defines functions to print colored text in terminal.
 
+# Save the current state of 'errexit'
+[[ $- == *e* ]] && ERREXIT_SET=1 || ERREXIT_SET=0
+
+set +e # disable 'errexit' since tput dim may return 1
+
 # define colors if TERM is good to handle them
 if [[ -t 1 ]]; then
   NORMAL=$(tput sgr0)
@@ -63,6 +68,9 @@ else
   BG_WHITE=""
   BG_LIGHTGRAY=""
 fi
+
+# restore 'errexit' if it was set
+[[ $ERREXIT_SET == 1 ]] && set -e
 
 # echo
 

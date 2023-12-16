@@ -111,6 +111,8 @@ function prompt() {
 # Pause the script and wait for user to press enter.
 # - Arguments:
 #   - $1: [optional] Prompt message.
+# - Example:
+#   pause "Press any key to continue..."
 function pause() {
   # check there's no argument or exactly 1 argument
   if [[ $# -ne 0 && $# -ne 1 ]]; then
@@ -121,9 +123,9 @@ function pause() {
   local PROMPT="$1"
   # if no prompt
   if [[ -z "$PROMPT" ]]; then
-    echo -n "[Press Enter to continue]"
+    echo -n "[Press any key to continue]"
   else
-    echo -n "➡️  $PROMPT [Press Enter to continue]"
+    echo -n "➡️  $PROMPT"
   fi
   bash -c 'read -r -n 1'
 }
