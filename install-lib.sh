@@ -33,21 +33,24 @@ LIB_NAME="chouti (shell lib)"
 DESTINATION_DIR="$CURRENT_DIR/lib"
 SYMLINK_DIR="/usr/local/lib/chouti"
 
-if [[ -d "$SYMLINK_DIR" ]]; then
-  if [[ -L "$SYMLINK_DIR" ]]; then
-    # is symlink
-    SYMLINK_TARGET=$(readlink -f "$SYMLINK_DIR")
-    if [[ $SYMLINK_TARGET == "$DESTINATION_DIR" ]]; then
-      # already linked
-      echo "✅ $LIB_NAME is already installed."
-    else
-      # different link
-      echo "🛑 $SYMLINK_DIR already exists. It is a symlink pointing to $SYMLINK_TARGET. Can't install $LIB_NAME."
-    fi
+if [[ -L "$SYMLINK_DIR" ]]; then
+  # is symlink
+  set +e # temporarily disable exit on non-zero status
+  SYMLINK_TARGET=$(readlink -f "$SYMLINK_DIR")
+  set -e
+  if [[ $SYMLINK_TARGET == "$DESTINATION_DIR" ]]; then
+    # already linked
+    echo "✅ $LIB_NAME is already installed."
   else
-    # is normal folder
-    echo "🛑 $SYMLINK_DIR already exists. It is a normal folder. Can't install $LIB_NAME."
+    # different link
+    echo "🛑 $SYMLINK_DIR already exists. It is a symlink pointing to $SYMLINK_TARGET. Can't install $LIB_NAME."
   fi
+elif [[ -d "$SYMLINK_DIR" ]]; then
+  # is normal folder
+  echo "🛑 $SYMLINK_DIR already exists. It is a normal folder. Can't install $LIB_NAME."
+elif [[ -e "$SYMLINK_DIR" ]]; then
+  # is file
+  echo "🛑 $SYMLINK_DIR already exists. It is a file. Can't install $LIB_NAME."
 else
   # no folder
   echo "➡️  Install $LIB_NAME..."
@@ -58,7 +61,7 @@ else
   else
     echo "➡️  Executing: ln -s $DESTINATION_DIR $SYMLINK_DIR"
     sudo ln -s "$DESTINATION_DIR" "$SYMLINK_DIR"
-    clean-line
+    clear-line
   fi
 
   # shellcheck disable=SC2181
