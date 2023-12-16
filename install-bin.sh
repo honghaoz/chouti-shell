@@ -8,8 +8,10 @@ pushd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 || exit 1
 # OVERVIEW
 # This script adds chouti-shell bin to $PATH
 
+set -e # exit immediately if a command exits with a non-zero status.
+
 # shellcheck disable=SC1091
-source "./shell-lib/utilities.sh" || exit 1
+source "./lib/utilities.sh" || exit 1
 
 bin_path=$(pwd)/bin
 # if bin_path under home dir, use $HOME instead of absolute path
