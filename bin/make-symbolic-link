@@ -3,7 +3,7 @@
 print_help() {
   echo "$(tput bold)OVERVIEW:$(tput sgr0) $(basename "$0") - Make symbolic link.
 
-$(tput bold)USAGE:$(tput sgr0) $(basename "$0") <destination-path> <symbolic-link-path>
+$(tput bold)USAGE:$(tput sgr0) $(basename "$0") [--no-backup] <destination-path> <symbolic-link-path>
 
 $(tput bold)ARGUMENTS:$(tput sgr0)
 
@@ -89,6 +89,7 @@ fi
 
 function backup-symlink-path() {
   if [[ $no_backup == true ]]; then
+    rm -rf "$symlink_path"
     return
   fi
 
