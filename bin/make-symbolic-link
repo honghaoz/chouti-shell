@@ -1,7 +1,7 @@
 #!/bin/bash
 
 print_help() {
-  echo "$(tput bold)OVERVIEW:$(tput sgr0) $(basename "$0") - Make symbolic link.
+  echo "$(tput bold)OVERVIEW:$(tput sgr0) Make symbolic link.
 
 $(tput bold)USAGE:$(tput sgr0) $(basename "$0") [--no-backup] <destination-path> <symbolic-link-path>
 
@@ -13,9 +13,7 @@ $(tput bold)ARGUMENTS:$(tput sgr0)
 $(tput bold)OPTIONS:$(tput sgr0)
 
   --no-backup          Overwrite existing symbolic link path without backup.
-
   -h, --help           Display this help message.
-
   -v, --version        Print the version information.
 
 $(tput bold)EXAMPLES:$(tput sgr0)
@@ -24,20 +22,14 @@ $(tput bold)EXAMPLES:$(tput sgr0)
     Make a symbolic link at path/to/symlink that points to path/to/destination.
 
   $(tput setaf 2)- make-symbolic-link --no-backup path/to/destination path/to/symlink$(tput sgr0)
-    Make a symbolic link at path/to/symlink that points to path/to/destination, and overwrite existing symbolic link
-    without backup.
+    Make a symbolic link at path/to/symlink that points to path/to/destination, and 
+    overwrite existing symbolic link without backup.
 "
 }
 
 print_version() {
   echo "0.1.0"
 }
-
-# print help if not enough arguments
-if [[ $# -lt 2 ]]; then
-  print_help
-  exit 1
-fi
 
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/utilities.sh"
@@ -69,17 +61,29 @@ while [[ $# -gt 0 ]]; do
       elif [[ $symlink_path == "" ]]; then
         symlink_path="$1"
       else
-        echo "Unexpected argument: $1"
+        echo "🛑 Unexpected argument: $1"
         exit 1
       fi
       shift # past argument
     else
-      echo "Unknown option: $1"
+      echo "🛑 Unknown option: $1"
       exit 1
     fi
     ;;
   esac
 done
+
+# if no destination path, exit
+if [[ $destination_path == "" ]]; then
+  echo "🛑  No destination path provided."
+  exit 1
+fi
+
+# if no symlink path, exit
+if [[ $symlink_path == "" ]]; then
+  echo "🛑  No symlink path provided."
+  exit 1
+fi
 
 # if destination path doesn't exist, skip
 if [[ ! -e "$destination_path" ]]; then
