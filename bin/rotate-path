@@ -1,0 +1,84 @@
+#!/bin/bash
+
+print_help() {
+  echo "$(tput bold)OVERVIEW:$(tput sgr0) Get a rotated path with suffix.
+
+$(tput bold)USAGE:$(tput sgr0) $(basename "$0") [--suffix] <path>
+
+$(tput bold)ARGUMENTS:$(tput sgr0)
+
+  <path>               Path to rotate.
+
+$(tput bold)OPTIONS:$(tput sgr0)
+
+  --suffix             The suffix to append to the rotated path.
+  -h, --help           Display this help message.
+  -v, --version        Print the version information.
+
+$(tput bold)EXAMPLES:$(tput sgr0)
+
+  $(tput setaf 2)- $(basename "$0") path/to/rotate$(tput sgr0)
+    Get a rotated path for path/to/rotate.
+
+  $(tput setaf 2)- $(basename "$0") --suffix \"-backup\" path/to/rotate$(tput sgr0)
+    Get a rotated path for path/to/rotate, and append \"-backup\" to the rotated path.
+"
+}
+
+print_version() {
+  echo "0.1.0"
+}
+
+path=""
+path_set=false
+suffix=""
+
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+  --suffix)
+    suffix="$2"
+    shift # past argument
+    shift # past value
+    ;;
+  --help | -h)
+    print_help
+    exit 0
+    ;;
+  --version | -v)
+    print_version
+    exit 0
+    ;;
+  *)
+    if [[ $path_set == false ]]; then
+      path=$key
+      path_set=true
+    else
+      echo "🛑 Invalid argument: $1"
+      exit 1
+    fi
+    shift # past argument
+    ;;
+  esac
+done
+
+# exit if no path
+if [[ -z "$path" ]]; then
+  echo "🛑 No path specified."
+  exit 1
+fi
+
+next_path="$path$suffix"
+if [[ ! -e $next_path ]]; then
+  echo "$next_path"
+  exit 0
+fi
+
+number=1
+next_path="$path$suffix$number"
+while [[ -e $next_path ]]; do
+  number=$((number + 1))
+  next_path="$path$suffix$number"
+done
+echo "$next_path"

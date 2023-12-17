@@ -120,33 +120,3 @@ function pause() {
   fi
   bash -c 'read -r -n 1'
 }
-
-# Get a rotated path with a suffix.
-# - Arguments:
-#   - $1: Path to rotate.
-#   - $2: [optional] Suffix to add.
-# - Return: Rotated path.
-# - Example:
-#   rotate-path "$HOME/Library/Spelling/LocalDictionary" "-backup"
-#   NEXT_PATH=$(rotate-path "$HOME/Library/Spelling/LocalDictionary" "-backup")
-function rotate-path() {
-  if [[ $# -ne 1 && $# -ne 2 ]]; then
-    echo "rotated-path: Invalid number of arguments: $#"
-    return 1
-  fi
-  local PATH=$1
-  local SUFFIX=$2
-  local NEXT_PATH="$PATH$SUFFIX"
-  if [[ ! -e $NEXT_PATH ]]; then
-    echo "$NEXT_PATH"
-    return 0
-  fi
-
-  local NUMBER=1
-  local NEXT_PATH="$PATH$SUFFIX$NUMBER"
-  while [[ -e $NEXT_PATH ]]; do
-    NUMBER=$((NUMBER + 1))
-    NEXT_PATH="$PATH$SUFFIX$NUMBER"
-  done
-  echo "$NEXT_PATH"
-}
