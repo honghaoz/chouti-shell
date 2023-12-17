@@ -18,18 +18,24 @@ $(tput bold)OPTIONS:$(tput sgr0)
 
 $(tput bold)EXAMPLES:$(tput sgr0)
 
-  $(tput setaf 2)- make-symbolic-link path/to/destination path/to/symlink$(tput sgr0)
+  $(tput setaf 2)- $(basename "$0") path/to/destination path/to/symlink$(tput sgr0)
     Make a symbolic link at path/to/symlink that points to path/to/destination.
 
-  $(tput setaf 2)- make-symbolic-link --no-backup path/to/destination path/to/symlink$(tput sgr0)
-    Make a symbolic link at path/to/symlink that points to path/to/destination, and 
-    overwrite existing symbolic link without backup.
+  $(tput setaf 2)- $(basename "$0") --no-backup path/to/destination path/to/symlink$(tput sgr0)
+    Make a symbolic link at path/to/symlink that points to path/to/destination, 
+    and overwrite existing symbolic link without backup.
 "
 }
 
 print_version() {
   echo "0.1.0"
 }
+
+# print help if no arguments
+if [[ $# -eq 0 ]]; then
+  print_help
+  exit 1
+fi
 
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/utilities.sh"

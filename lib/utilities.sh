@@ -42,6 +42,7 @@ function run-command() {
 #   prompt "Do you want to run 'ls -l'?" "ls -l"
 #   prompt "Do you want to run 'ls -l'?" "ls -l" "ls"
 #   prompt "Do you want to run 'ls -l'?" "ls -l" "ls" "ls -all"
+#   reply=""; prompt "Do you want to continue?" "reply=\"y\"" "reply=\"n\"" "reply=\"n\""
 function prompt() {
   if [[ $# == 0 ]]; then
     echo "prompt: Must provide prompt message."
@@ -57,11 +58,9 @@ function prompt() {
   local NO_COMMAND="$3"
   local SKIP_COMMAND="$4"
 
-  local REPLIED_YES=false
-
   local REPLY_COUNT=0
   while [[ $REPLY_COUNT -lt 3 ]]; do
-    echo -n "➡️  $PROMPT [y/n] "
+    echo -n "❓ $PROMPT [y/n] "
     # shellcheck disable=SC2155
     local REPLY=$(bash -c 'read -r -n 1; echo $REPLY')
 
@@ -69,7 +68,6 @@ function prompt() {
       [Yy]* )
         echo ""
         eval "$YES_COMMAND"
-        REPLIED_YES=true
         break
         ;;
       [Nn]* )

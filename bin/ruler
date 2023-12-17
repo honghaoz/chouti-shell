@@ -17,10 +17,10 @@ $(tput bold)OPTIONS:$(tput sgr0)
 
 $(tput bold)EXAMPLES:$(tput sgr0)
 
-  $(tput setaf 2)- ruler 120$(tput sgr0)
+  $(tput setaf 2)- $(basename "$0") 120$(tput sgr0)
     Print a ruler line with width 120.
 
-  $(tput setaf 2)- ruler --set-width 120$(tput sgr0)
+  $(tput setaf 2)- $(basename "$0") --set-width 120$(tput sgr0)
     Print a ruler line with width 120, and set the terminal width to 120.
 "
 }

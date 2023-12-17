@@ -26,13 +26,13 @@ $(tput bold)OPTIONS:$(tput sgr0)
 
 $(tput bold)EXAMPLES:$(tput sgr0)
 
-  $(tput setaf 2)- swift-build$(tput sgr0)
+  $(tput setaf 2)- $(basename "$0")$(tput sgr0)
     Builds a binary for the Swift package located at the current directory, using the current system architecture.
 
-  $(tput setaf 2)- swift-build --arch arm64 /path/to/package$(tput sgr0)
+  $(tput setaf 2)- $(basename "$0") --arch arm64 /path/to/package$(tput sgr0)
     Builds a binary for the Swift package located at /path/to/package, using arm64 architecture.
 
-  $(tput setaf 2)- swift-build --install path/to/install /path/to/package$(tput sgr0)
+  $(tput setaf 2)- $(basename "$0") --install path/to/install /path/to/package$(tput sgr0)
     Builds a binary for the Swift package located at /path/to/package, using the current system architecture. And 
     installs the binary to path/to/install.
 "
@@ -42,11 +42,8 @@ print_version() {
   echo "0.1.0"
 }
 
-# print help if no arguments
-if [[ $# -eq 0 ]]; then
-  print_help
-  exit 1
-fi
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/../lib/utilities.sh"
 
 # Constants
 DEFAULT_INSTALL_PATH="/usr/local/bin"
@@ -67,7 +64,7 @@ while [[ $# -gt 0 ]]; do
   --arch)
     architecture="$2"
     if [[ $architecture != "arm64" && $architecture != "x86_64" && $architecture != "universal" ]]; then
-      echo "Unsupported architecture: $architecture"
+      echo "🛑 Unsupported architecture: $architecture"
       exit 1
     fi
     architecture_set=true
@@ -79,7 +76,7 @@ while [[ $# -gt 0 ]]; do
       install_dir="$2"
       # exit if the path is pointing to a file
       if [[ -f $install_dir ]]; then
-        echo "Error: $install_dir is a valid install path."
+        echo "🛑 Error: $install_dir is a valid install path."
         exit 1
       fi
       shift # past value
@@ -106,12 +103,12 @@ while [[ $# -gt 0 ]]; do
         package_dir="$1"
         package_dir_set=true
       else
-        echo "Unexpected argument: $1"
+        echo "🛑 Unexpected argument: $1"
         exit 1
       fi
       shift # past argument
     else
-      echo "Unknown option: $1"
+      echo "🛑 Unknown option: $1"
       exit 1
     fi
     ;;
@@ -128,7 +125,7 @@ if [[ $architecture_set == false ]]; then
 fi
 
 if [[ ! -f "$package_dir/Package.swift" ]]; then
-  echo "Error: $package_dir is not a Swift package."
+  echo "🛑 Error: $package_dir is not a Swift package."
   exit 1
 fi
 
@@ -198,11 +195,8 @@ echo "➡️  Copying $executable_name into ${CYAN}$package_dir/Products/$execut
 if [[ -f "$package_dir/Products/$executable_name" && $force == false ]]; then
   echo "⚠️  A binary already exists at: ${YELLOW}$package_dir/Products/$executable_name${NORMAL}"
 
-  read -p "Do you want to replace it? [y/n] " -n 1 -r
-  echo
-  tput cuu 1 && tput el
-  tput cuu 1 && tput el
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+  reply=""; prompt "Do you want to replace it?" "reply=\"y\"" "reply=\"n\"" "reply=\"n\""
+  if [[ ! $reply =~ ^[Yy]$ ]]; then
     echo "🛑 Aborted."
     exit 1
   fi
@@ -210,7 +204,6 @@ fi
 cp -f "$executable_path" "$package_dir/Products/$executable_name"
 echo "✅ Copied $executable_name into ${GREEN}$package_dir/Products/$executable_name${NORMAL}"
 
-echo ""
 # verify the binary has the correct architecture
 if [[ $architecture == "universal" ]]; then
   if ! lipo "$package_dir/Products/$executable_name" -verify_arch x86_64 arm64; then
@@ -225,16 +218,14 @@ else
 fi
 
 if [[ $should_install == true ]]; then
+  echo "" 
   echo "➡️  Installing $executable_name to ${CYAN}$install_dir/$executable_name${NORMAL}"
   # if file exists, prompt for confirmation
   if [[ -f "$install_dir/$executable_name" && $force == false ]]; then
     echo "⚠️  A binary already exists at: ${YELLOW}$install_dir/$executable_name${NORMAL}"
 
-    read -p "Do you want to replace it? [y/n] " -n 1 -r
-    echo
-    tput cuu 1 && tput el
-    tput cuu 1 && tput el
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    reply=""; prompt "Do you want to replace it?" "reply=\"y\"" "reply=\"n\"" "reply=\"n\""
+    if [[ ! $reply =~ ^[Yy]$ ]]; then
       echo "🛑 Aborted."
       exit 1
     fi
