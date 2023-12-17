@@ -144,10 +144,10 @@ fi
 # architecture
 
 echo "ℹ️  Build configuration:"
-echo "- Swift package: ${COLOR_CYAN}$package_dir${COLOR_RESET}"
-echo "- Architecture: ${COLOR_CYAN}$architecture${COLOR_RESET}"
+echo "- Swift package: ${CYAN}$package_dir${NORMAL}"
+echo "- Architecture: ${CYAN}$architecture${NORMAL}"
 if [[ $should_install == true ]]; then
-  echo "- Install path: ${COLOR_CYAN}$install_dir${COLOR_RESET}"
+  echo "- Install path: ${CYAN}$install_dir${NORMAL}"
 fi
 
 echo ""
@@ -193,10 +193,10 @@ if ! strip "$executable_path"; then
 fi
 
 echo ""
-echo "➡️  Copying $executable_name into ${COLOR_CYAN}$package_dir/Products/$executable_name${COLOR_RESET}"
+echo "➡️  Copying $executable_name into ${CYAN}$package_dir/Products/$executable_name${NORMAL}"
 # if file exists, prompt for confirmation
 if [[ -f "$package_dir/Products/$executable_name" && $force == false ]]; then
-  echo "⚠️  A binary already exists at: ${COLOR_YELLOW}$package_dir/Products/$executable_name${COLOR_RESET}"
+  echo "⚠️  A binary already exists at: ${YELLOW}$package_dir/Products/$executable_name${NORMAL}"
 
   read -p "Do you want to replace it? [y/n] " -n 1 -r
   echo
@@ -208,7 +208,7 @@ if [[ -f "$package_dir/Products/$executable_name" && $force == false ]]; then
   fi
 fi
 cp -f "$executable_path" "$package_dir/Products/$executable_name"
-echo "✅ Copied $executable_name into ${COLOR_GREEN}$package_dir/Products/$executable_name${COLOR_RESET}"
+echo "✅ Copied $executable_name into ${GREEN}$package_dir/Products/$executable_name${NORMAL}"
 
 echo ""
 # verify the binary has the correct architecture
@@ -225,10 +225,10 @@ else
 fi
 
 if [[ $should_install == true ]]; then
-  echo "➡️  Installing $executable_name to ${COLOR_CYAN}$install_dir/$executable_name${COLOR_RESET}"
+  echo "➡️  Installing $executable_name to ${CYAN}$install_dir/$executable_name${NORMAL}"
   # if file exists, prompt for confirmation
   if [[ -f "$install_dir/$executable_name" && $force == false ]]; then
-    echo "⚠️  A binary already exists at: ${COLOR_YELLOW}$install_dir/$executable_name${COLOR_RESET}"
+    echo "⚠️  A binary already exists at: ${YELLOW}$install_dir/$executable_name${NORMAL}"
 
     read -p "Do you want to replace it? [y/n] " -n 1 -r
     echo
@@ -240,7 +240,7 @@ if [[ $should_install == true ]]; then
     fi
   fi
   install -m 755 "$package_dir/Products/$executable_name" "$install_dir"
-  echo "✅ Installed $executable_name to ${COLOR_GREEN}$install_dir/$executable_name${COLOR_RESET}"
+  echo "✅ Installed $executable_name to ${GREEN}$install_dir/$executable_name${NORMAL}"
 fi
 
 cd "$current_dir" || (echo "Failed to navigate to $current_dir" && exit 1)

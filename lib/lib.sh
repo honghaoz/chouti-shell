@@ -1,11 +1,10 @@
 #!/bin/bash
 
-# get the directory of the script for zsh and bash
 if [[ -n "$BASH_VERSION" ]]; then
   SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 elif [[ -n "$ZSH_VERSION" ]]; then
-  # shellcheck disable=SC2296
-  SCRIPT_DIR="$( cd "$( dirname "${(%):-%N}" )" >/dev/null 2>&1 && pwd )"
+  # https://stackoverflow.com/questions/18810483/what-is-the-zsh-equivalent-of-a-bash-script-getting-the-scripts-directory
+  SCRIPT_DIR=${0:a:h}
 else
   echo "🛑 Unsupported shell: $SHELL."
   exit 1
