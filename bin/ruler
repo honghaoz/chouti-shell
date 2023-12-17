@@ -1,0 +1,98 @@
+#!/bin/bash
+
+print_help() {
+  echo "$(tput bold)OVERVIEW:$(tput sgr0) Print ruler line and adjust window width.
+
+$(tput bold)USAGE:$(tput sgr0) $(basename "$0") [--set-width] [<width>]
+
+$(tput bold)ARGUMENTS:$(tput sgr0)
+
+  [<width>]            The width of the ruler line. If not specified, uses 80.
+
+$(tput bold)OPTIONS:$(tput sgr0)
+
+  --set-width          Set the width of the terminal to the specified width.
+  -h, --help           Display this help message.
+  -v, --version        Print the version information.
+
+$(tput bold)EXAMPLES:$(tput sgr0)
+
+  $(tput setaf 2)- ruler 120$(tput sgr0)
+    Print a ruler line with width 120.
+
+  $(tput setaf 2)- ruler --set-width 120$(tput sgr0)
+    Print a ruler line with width 120, and set the terminal width to 120.
+"
+}
+
+print_version() {
+  echo "0.1.0"
+}
+
+length=80
+length_set=false
+should_set_width=false
+
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+  --set-width)
+    should_set_width=true
+    shift # past argument
+    ;;
+  --help | -h)
+    print_help
+    exit 0
+    ;;
+  --version | -v)
+    print_version
+    exit 0
+    ;;
+  *)
+    if [[ $length_set == false ]]; then
+      length="$1"
+      length_set=true
+    else
+      echo "🛑 Invalid argument: $1"
+      exit 1
+    fi
+    shift # past argument
+    ;;
+  esac
+done
+
+if [[ $length =~ ^[0-9]+$ ]]; then
+  :
+else
+  echo "🛑 Invalid length: $length"
+  exit 1
+fi
+
+# make sure length is at least 5
+if [[ $length -lt 20 ]]; then
+  echo "🛑 Invalid length: $length"
+  exit 1
+fi
+
+if [[ $should_set_width == true ]]; then
+  width=$length
+  height=$(tput lines)
+  printf '\e[8;%d;%dt\n' "$height" "$width"
+  printf '\033[1A\033[K'
+fi
+
+# get char length of "length"
+char_length=${#length}
+
+# print "=== 80 ==="
+total_length=$((length - char_length - 2))
+half_length=$((total_length / 2))
+half_print=$(printf '=%.0s' $(seq 1 "$half_length"))
+
+# Adjust if total_length is odd
+if (( total_length % 2 != 0 )); then
+  echo "$half_print $length $half_print="
+else
+  echo "$half_print $length $half_print"
+fi

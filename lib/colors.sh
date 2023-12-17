@@ -229,3 +229,4 @@ function print-colors() {
 
 # References:
 # https://linux.101hacks.com/ps1-examples/prompt-color-using-tput/
+# https://linuxcommand.org/lc3_adv_tput.php
