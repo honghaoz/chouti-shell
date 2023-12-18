@@ -120,3 +120,14 @@ function pause() {
   fi
   bash -c 'read -r -n 1'
 }
+
+# Check the architecture type of a binary file.
+# - Arguments:
+#   - $1: Path to the binary file.
+# - Example:
+#   check-bin-arch-type /usr/local/bin/ls
+function check-bin-arch-type() {
+  # References:
+  # - https://developer.apple.com/documentation/xcode/building_a_universal_macos_binary
+  command lipo -archs "$1"
+}

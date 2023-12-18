@@ -3,26 +3,29 @@
 print_help() {
   echo "$(tput bold)OVERVIEW:$(tput sgr0) Build a binary for the specified Swift package.
 
-$(tput bold)USAGE:$(tput sgr0) $(basename "$0") [--arch arm64|x86_64|universal] [<swift-package-path>] [--install [<path>]]
+$(tput bold)USAGE:$(tput sgr0) $(basename "$0") [--config debug|release] [--arch arm64|x86_64|universal] [<swift-package-path>] [--install [<path>]]
 
 $(tput bold)ARGUMENTS:$(tput sgr0)
 
-  [<swift-package-path>]  Path to the Swift package to build. If not specified, the command uses the current directory.
+  [<swift-package-path>]   Path to the Swift package to build. If not specified, the command uses the current directory.
 
 $(tput bold)OPTIONS:$(tput sgr0)
 
-  --arch <architecture>   Specify the architecture for the binary. Options are 'arm64', 'x86_64', or 'universal'. 
-                          If not specified, the build uses the current architecture of the environment.
+  --config <configuration> Specify the configuration for the build. Options are 'debug' or 'release'. If not 
+                           specified, the build uses 'release' configuration.
 
-  --install [<path>]      Installs the built binary to the specified path. If a path is provided, the binary will be 
-                          installed to the specified path. If no path is provided, the binary will be installed to 
-                          /usr/local/bin.
+  --arch <architecture>    Specify the architecture for the binary. Options are 'arm64', 'x86_64', or 'universal'. 
+                           If not specified, the build uses the current architecture of the environment.
 
-  -f, --force             Force the command to overwrite existing files.
+  --install [<path>]       Installs the built binary to the specified path. If a path is provided, the binary will be 
+                           installed to the specified path. If no path is provided, the binary will be installed to 
+                           /usr/local/bin.
 
-  -h, --help              Display this help message.
+  -f, --force              Force the command to overwrite existing files.
 
-  -v, --version           Print the version information.
+  -h, --help               Display this help message.
+
+  -v, --version            Print the version information.
 
 $(tput bold)EXAMPLES:$(tput sgr0)
 
@@ -43,12 +46,14 @@ print_version() {
 }
 
 # shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]}")/../lib/utilities.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../lib/lib.sh"
 
 # Constants
 DEFAULT_INSTALL_PATH="/usr/local/bin"
 
 # Variables
+config=""
+config_set=false
 architecture=""
 architecture_set=false
 package_dir=""
@@ -61,6 +66,16 @@ while [[ $# -gt 0 ]]; do
   key="$1"
 
   case $key in
+  --config)
+    config="$2"
+    if [[ $config != "debug" && $config != "release" ]]; then
+      echo "🛑 Unsupported configuration: $config"
+      exit 1
+    fi
+    config_set=true
+    shift # past argument
+    shift # past value
+    ;;
   --arch)
     architecture="$2"
     if [[ $architecture != "arm64" && $architecture != "x86_64" && $architecture != "universal" ]]; then
@@ -120,6 +135,10 @@ if [[ $package_dir_set == false ]]; then
 fi
 package_dir=$(realpath "$package_dir")
 
+if [[ $config_set == false ]]; then
+  config="release"
+fi
+
 if [[ $architecture_set == false ]]; then
   architecture=$(uname -m)
 fi
@@ -142,6 +161,7 @@ fi
 
 echo "ℹ️  Build configuration:"
 echo "- Swift package: ${CYAN}$package_dir${NORMAL}"
+echo "- Configuration: ${CYAN}$config${NORMAL}"
 echo "- Architecture: ${CYAN}$architecture${NORMAL}"
 if [[ $should_install == true ]]; then
   echo "- Install path: ${CYAN}$install_dir${NORMAL}"
@@ -150,10 +170,10 @@ fi
 echo ""
 if [[ $architecture == "universal" ]]; then
   echo "➡️  Building universal binary..."
-  swift build --package-path "$package_dir" -c release --arch arm64 --arch x86_64
+  swift build --package-path "$package_dir" -c "$config" --arch arm64 --arch x86_64
 else
   echo "➡️  Building for $architecture..."
-  swift build --package-path "$package_dir" -c release --arch "$architecture"
+  swift build --package-path "$package_dir" -c "$config" --arch "$architecture"
 fi
 
 # shellcheck disable=SC2181
@@ -171,14 +191,18 @@ if [[ ! -d "Products" ]]; then
 fi
 
 if [[ $architecture == "universal" ]]; then
-  release_dir="./.build/apple/Products/Release"
-elif [[ $architecture == "arm64" ]]; then
-  release_dir="./.build/arm64-apple-macosx/release"
-elif [[ $architecture == "x86_64" ]]; then
-  release_dir="./.build/x86_64-apple-macosx/release"
+  if [[ $config == "debug" ]]; then
+    artifact_dir="./.build/apple/Products/Debug"
+  elif [[ $config == "release" ]]; then
+    artifact_dir="./.build/apple/Products/Release"
+  fi
+elif [[ $config == "debug" ]]; then
+  artifact_dir="./.build/debug"
+elif [[ $config == "release" ]]; then
+  artifact_dir="./.build/release"
 fi
 
-cd "$release_dir" || (echo "Failed to navigate to $release_dir" && exit 1)
+cd "$artifact_dir" || (echo "Failed to navigate to $artifact_dir" && exit 1)
 executable_path=$(realpath "$(find . -maxdepth 1 -perm -111 -type f)")
 executable_name=$(basename "$executable_path")
 
@@ -235,3 +259,6 @@ if [[ $should_install == true ]]; then
 fi
 
 cd "$current_dir" || (echo "Failed to navigate to $current_dir" && exit 1)
+
+# References:
+# - https://liamnichols.eu/2020/08/01/building-swift-packages-as-a-universal-binary.html
