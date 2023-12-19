@@ -29,6 +29,11 @@ print_version() {
 
 set -e
 
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+
+# shellcheck disable=SC1091
+source "$SCRIPT_DIR/../../../lib/lib.sh"
+
 while [[ $# -gt 0 ]]; do
   key="$1"
 
@@ -46,9 +51,6 @@ while [[ $# -gt 0 ]]; do
     ;;
   esac
 done
-
-# shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]}")/../../lib/lib.sh"
 
 CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"

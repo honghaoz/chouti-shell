@@ -29,6 +29,11 @@ print_version() {
 
 set -e
 
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+
+# shellcheck disable=SC1091
+source "$SCRIPT_DIR/../../../lib/lib.sh"
+
 project_name=""
 project_name_set=false
 
@@ -56,9 +61,6 @@ while [[ $# -gt 0 ]]; do
     ;;
   esac
 done
-
-# shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]}")/../../lib/lib.sh"
 
 if [[ $project_name_set == false ]]; then
   SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
