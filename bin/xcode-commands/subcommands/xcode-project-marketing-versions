@@ -9,10 +9,14 @@ $(tput bold)USAGE:$(tput sgr0) xcode project-marketing-version [<project-name>]
 
 $(tput bold)ARGUMENTS:$(tput sgr0)
 
-  [<project-name>]     The name of the project to get the marketing version for.
+  [<project-name>]     The name of the project, not including the extension.
+                       If not specified, the project in the current directory 
+                       is used.
 
 $(tput bold)OPTIONS:$(tput sgr0)
 
+  --all-targets        Print the marketing versions of all targets. By default, 
+                       only application targets and app extensions are printed.
   -h, --help           Display this help message.
   -v, --version        Print the version information.
 
@@ -39,11 +43,16 @@ source "$SCRIPT_DIR/utilities"
 
 project_name=""
 project_name_set=false
+all_targets=false
 
 while [[ $# -gt 0 ]]; do
   key="$1"
 
   case $key in
+  --all-targets)
+    all_targets=true
+    shift # past argument
+    ;;
   --help | -h)
     print_help
     exit 0
@@ -86,13 +95,25 @@ fi
 
 # get the info plist path for a given configuration id
 get_info_plist_path() {
-  get_build_setting "$pbxproj_path" "$1" "INFOPLIST_FILE"
+  get_section_data "$pbxproj_path" "$1" "INFOPLIST_FILE"
 }
 
 # get the marketing version for a given configuration id
 get_marketing_version() {
-  get_build_setting "$pbxproj_path" "$1" "MARKETING_VERSION"
+  get_section_data "$pbxproj_path" "$1" "MARKETING_VERSION"
 }
+
+get_product_type() {
+  get_section_data "$pbxproj_path" "$1" "productType"
+  # com.apple.product-type.application
+  # com.apple.product-type.app-extension
+  # com.apple.product-type.bundle.unit-test
+  # com.apple.product-type.bundle.ui-testing
+  # com.apple.product-type.bundle
+}
+
+APPLICATION_PRODUCT_TYPE="com.apple.product-type.application"
+APPLICATION_EXTENSION_PRODUCT_TYPE="com.apple.product-type.app-extension"
 
 declare -a target_ids
 declare -a target_names
@@ -112,7 +133,15 @@ for i in "${!target_ids[@]}"; do
   target_id="${target_ids[$i]}"
   config_list_id=$(get_build_configuration_list_id "$pbxproj_path" "$target_id")
 
-  echo "$target_name:"
+  # skip non-application targets if --application-only is specified
+  if [[ $all_targets == false ]]; then
+    product_type=$(get_product_type "$target_id")
+    if [[ $product_type != "$APPLICATION_PRODUCT_TYPE" && $product_type != "$APPLICATION_EXTENSION_PRODUCT_TYPE" ]]; then
+      continue
+    fi
+  fi
+
+  echo "${CYAN}${BOLD}$target_name${NORMAL}:"
 
   unset -v config_ids
   unset -v config_names
@@ -136,6 +165,8 @@ for i in "${!target_ids[@]}"; do
     project_version=$(get_marketing_version "$config_id")
 
     info_plist_path=$(get_info_plist_path "$config_id")
+    # replace $(TARGET_NAME) with the actual target name
+    info_plist_path="${info_plist_path/\$\(TARGET_NAME\)/$target_name}"
 
     set +e
     has_version_in_info_plist=true
@@ -146,9 +177,10 @@ for i in "${!target_ids[@]}"; do
     fi
     set -e
 
-    printf "* %s:\n  * Project: %s\n" "$config_name" "$project_version"
+    printf "-"
+    printf " %s:\n  - Project: %s\n" "$config_name" "$project_version"
     if [[ $has_version_in_info_plist == true ]]; then
-      printf "  * Info.plist: %s\n" "$info_plist_version"
+      printf "  - Info.plist: %s\n" "$info_plist_version"
     fi
   done
 

@@ -148,22 +148,112 @@ get_configurations() {
   done <<<"$specific_config_list"
 }
 
-# Get the build settings for a given configuration id.
+# Get the section data for a given id and key.
 # - Arguments:
 #   - $1: The path to the .pbxproj file.
-#   - $2: The configuration id.
-#   - $3: The setting name.
+#   - $2: The id.
+#   - $3: The key.
 # - Output:
-#   - The build setting value.
+#   - The section data.
 # - Example:
-#   get_build_setting /path/to/project.pbxproj 0225CCDE204BECF700273B48 MARKETING_VERSION
-#   get_build_setting /path/to/project.pbxproj 0225CCDE204BECF700273B48 INFOPLIST_FILE
-get_build_setting() {
+#   get_section_data /path/to/project.pbxproj E5097DBE2890E0DA00DF5D57 MARKETING_VERSION
+#   get_section_data /path/to/project.pbxproj 0225CCDE204BECF700273B48 INFOPLIST_FILE
+get_section_data() {
   local pbxproj_path=$1
-  local config_id=$2
-  local setting_name=$3
-  local build_settings_section
-  build_settings_section=$(awk "/$config_id \/\* /,/\};/" "$pbxproj_path")
+  local id=$2
+  local key=$3
+  local section
+  section=$(awk "/$id \/\* /,/\};/" "$pbxproj_path")
+
+  # /* Begin PBXNativeTarget section */
+  # 		020E46EB22B1C42E0042F4C0 /* InstaTip */ = {
+  # 			isa = PBXNativeTarget;
+  # 			buildConfigurationList = 020E471622B1C4300042F4C0 /* Build configuration list for PBXNativeTarget "InstaTip" */;
+  # 			buildPhases = (
+  # 				2A283F54CA70ABA4600279D9 /* [CP] Check Pods Manifest.lock */,
+  # 				020E46E822B1C42E0042F4C0 /* Sources */,
+  # 				020E46E922B1C42E0042F4C0 /* Frameworks */,
+  # 				020E46EA22B1C42E0042F4C0 /* Resources */,
+  # 				954C1A36E92B1D92DD2CD74B /* [CP] Embed Pods Frameworks */,
+  # 				ED978A56A7AAEE0D686151D6 /* [CP] Copy Pods Resources */,
+  # 				02AF112A22FD0B2B006AB8D3 /* Crashlytics */,
+  # 				026A2C5B23CC608500CFA557 /* Embed PlugIns */,
+  # 			);
+  # 			buildRules = (
+  # 			);
+  # 			dependencies = (
+  # 				026A2C5A23CC608500CFA557 /* PBXTargetDependency */,
+  # 			);
+  # 			name = InstaTip;
+  # 			packageProductDependencies = (
+  # 				E587075F24A5CFD400057A2F /* Then */,
+  # 				E587076224A5CFEF00057A2F /* SnapKit */,
+  # 				E587076524A5D04900057A2F /* Siren */,
+  # 				E587076824A5D06300057A2F /* Haptica */,
+  # 				E587076B24A5D0A000057A2F /* SwiftyUserDefaults */,
+  # 				E5E1D3A524A85BD100866961 /* ChouTiUI */,
+  # 				E5E1D3A724A863F200866961 /* ChouTi */,
+  # 			);
+  # 			productName = hateTipping;
+  # 			productReference = 020E46EC22B1C42E0042F4C0 /* InstaTip.app */;
+  # 			productType = "com.apple.product-type.application";
+  # 		};
+  # 		020E470122B1C4300042F4C0 /* InstaTipTests */ = {
+  # 			isa = PBXNativeTarget;
+  # 			buildConfigurationList = 020E471922B1C4300042F4C0 /* Build configuration list for PBXNativeTarget "InstaTipTests" */;
+  # 			buildPhases = (
+  # 				EE7B5D238B1B47553677B9FB /* [CP] Check Pods Manifest.lock */,
+  # 				020E46FE22B1C4300042F4C0 /* Sources */,
+  # 				020E46FF22B1C4300042F4C0 /* Frameworks */,
+  # 				020E470022B1C4300042F4C0 /* Resources */,
+  # 			);
+  # 			buildRules = (
+  # 			);
+  # 			dependencies = (
+  # 				020E470422B1C4300042F4C0 /* PBXTargetDependency */,
+  # 			);
+  # 			name = InstaTipTests;
+  # 			productName = hateTippingTests;
+  # 			productReference = 020E470222B1C4300042F4C0 /* InstaTipTests.xctest */;
+  # 			productType = "com.apple.product-type.bundle.unit-test";
+  # 		};
+  # 		020E470C22B1C4300042F4C0 /* InstaTipUITests */ = {
+  # 			isa = PBXNativeTarget;
+  # 			buildConfigurationList = 020E471C22B1C4300042F4C0 /* Build configuration list for PBXNativeTarget "InstaTipUITests" */;
+  # 			buildPhases = (
+  # 				F2FFCB7F5F76013CC60BBC96 /* [CP] Check Pods Manifest.lock */,
+  # 				020E470922B1C4300042F4C0 /* Sources */,
+  # 				020E470A22B1C4300042F4C0 /* Frameworks */,
+  # 				020E470B22B1C4300042F4C0 /* Resources */,
+  # 			);
+  # 			buildRules = (
+  # 			);
+  # 			dependencies = (
+  # 				020E470F22B1C4300042F4C0 /* PBXTargetDependency */,
+  # 			);
+  # 			name = InstaTipUITests;
+  # 			productName = hateTippingUITests;
+  # 			productReference = 020E470D22B1C4300042F4C0 /* InstaTipUITests.xctest */;
+  # 			productType = "com.apple.product-type.bundle.ui-testing";
+  # 		};
+  # 		026A2C5123CC607500CFA557 /* MacHelperBundle */ = {
+  # 			isa = PBXNativeTarget;
+  # 			buildConfigurationList = 026A2C5723CC607500CFA557 /* Build configuration list for PBXNativeTarget "MacHelperBundle" */;
+  # 			buildPhases = (
+  # 				026A2C4E23CC607500CFA557 /* Sources */,
+  # 				026A2C4F23CC607500CFA557 /* Frameworks */,
+  # 				026A2C5023CC607500CFA557 /* Resources */,
+  # 			);
+  # 			buildRules = (
+  # 			);
+  # 			dependencies = (
+  # 			);
+  # 			name = MacHelperBundle;
+  # 			productName = MacHelperBundle;
+  # 			productReference = 026A2C5223CC607500CFA557 /* MacHelperBundle.bundle */;
+  # 			productType = "com.apple.product-type.bundle";
+  # 		};
+  # /* End PBXNativeTarget section */
 
   # E5097DBE2890E0DA00DF5D57 /* Debug */ = {
   # 			isa = XCBuildConfiguration;
@@ -201,14 +291,8 @@ get_build_setting() {
   # 			defaultConfigurationName = Release;
   # 		};
 
-  # echo "$build_settings_section"
-
   local value
-  # doesn't work for INFOPLIST_FILE = "say-no-to-notch/Supporting Files/Info.plist"; because of the space
-  # value=$(echo "$build_settings_section" | awk -v setting="$setting_name" '$1 == setting {print $3; exit}' | tr -d '";')
-
-  # this works for INFOPLIST_FILE = "say-no-to-notch/Supporting Files/Info.plist";
-  value=$(echo "$build_settings_section" | awk -v setting="$setting_name" '$1 == setting {print substr($0, index($0, $3)); exit}' | tr -d '";')
+  value=$(echo "$section" | awk -v key="$key" '$1 == key {print substr($0, index($0, $3)); exit}' | tr -d '";')
 
   # remove quotes from the output
   value="${value//\"/}"
