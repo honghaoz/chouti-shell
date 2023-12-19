@@ -1,0 +1,235 @@
+#!/bin/bash
+
+# OVERVIEW: Utilities for working with Xcode .pbxproj files.
+
+# Get the target ids and names.
+# - Arguments:
+#   - $1: The path to the .pbxproj file.
+# - Output:
+#   - A list of target ids and names in the format of "<target-id>":"<target-name>".
+# - Example:
+#   get_targets /path/to/project.pbxproj
+get_targets() {
+  # /* Begin PBXProject section */
+  # 		0225CCC5204BECF700273B48 /* Project object */ = {
+  # 			isa = PBXProject;
+  # 			attributes = {
+  # 				BuildIndependentTargetsInParallel = YES;
+  # 				LastSwiftUpdateCheck = 1220;
+  # 				LastUpgradeCheck = 1500;
+  # 				ORGANIZATIONNAME = HonghaoZ;
+  # 				TargetAttributes = {
+  # 					0225CCCC204BECF700273B48 = {
+  # 						CreatedOnToolsVersion = 9.2;
+  # 						LastSwiftMigration = 1020;
+  # 						SystemCapabilities = {
+  # 							com.apple.ApplicationGroups.iOS = {
+  # 								enabled = 1;
+  # 							};
+  # 						};
+  # 					};
+  # 					0225CCF8204BF7F800273B48 = {
+  # 						CreatedOnToolsVersion = 9.2;
+  # 						LastSwiftMigration = 1020;
+  # 						SystemCapabilities = {
+  # 							com.apple.ApplicationGroups.iOS = {
+  # 								enabled = 1;
+  # 							};
+  # 						};
+  # 					};
+  # 				};
+  # 			};
+  # 			buildConfigurationList = 0225CCC8204BECF700273B48 /* Build configuration list for PBXProject "Wazer" */;
+  # 			compatibilityVersion = "Xcode 8.0";
+  # 			developmentRegion = en;
+  # 			hasScannedForEncodings = 0;
+  # 			knownRegions = (
+  # 				en,
+  # 				Base,
+  # 			);
+  # 			mainGroup = 0225CCC4204BECF700273B48;
+  # 			packageReferences = (
+  # 			);
+  # 			productRefGroup = 0225CCCE204BECF700273B48 /* Products */;
+  # 			projectDirPath = "";
+  # 			projectRoot = "";
+  # 			targets = (
+  # 				0225CCCC204BECF700273B48 /* Maze */,
+  # 				0225CCF8204BF7F800273B48 /* MazeShareExtension */,
+  # 			);
+  # 		};
+  # /* End PBXProject section */
+  local pbxproj_path=$1
+  local targets_section
+  targets_section=$(awk '/targets = \(/ {flag=1; next} /\);/ {flag=0} flag' "$pbxproj_path")
+
+  while IFS= read -r line; do
+    if [[ $line =~ ([A-Za-z0-9]+)[[:space:]]+/\*[[:space:]]+(.+)[[:space:]]+\*/ ]]; then
+      target_id="${BASH_REMATCH[1]}"
+      target_name="${BASH_REMATCH[2]}"
+
+      echo "\"$target_id\":\"$target_name\""
+    fi
+  done < <(echo "$targets_section")
+}
+
+# Get the buildConfigurationList id for a given target id.
+# - Arguments:
+#   - $1: The path to the .pbxproj file.
+#   - $2: The target id.
+# - Output:
+#   - The buildConfigurationList id.
+# - Example:
+#   get_build_configuration_list_id /path/to/project.pbxproj 0225CCCC204BECF700273B48
+get_build_configuration_list_id() {
+  local pbxproj_path=$1
+  local target_id=$2
+  local config_list_id
+  config_list_id=$(awk "/$target_id \/\* /,/\};/" "$pbxproj_path" | grep "buildConfigurationList = " | awk -F ' = ' '{print $2}' | cut -d ' ' -f 1)
+  echo "$config_list_id"
+}
+
+# Get the configuration ids from a buildConfigurationList id.
+# - Arguments:
+#   - $1: The path to the .pbxproj file.
+#   - $2: The buildConfigurationList id.
+# - Output:
+#   - A list of configuration ids and names in the format of "<config-id>":"<config-name>".
+# - Example:
+#   get_configurations /path/to/project.pbxproj 0225CCC8204BECF700273B48
+get_configurations() {
+  # /* Begin XCConfigurationList section */
+  # 		0225CCC8204BECF700273B48 /* Build configuration list for PBXProject "Wazer" */ = {
+  # 			isa = XCConfigurationList;
+  # 			buildConfigurations = (
+  # 				0225CCDD204BECF700273B48 /* Debug */,
+  # 				0225CCDE204BECF700273B48 /* Release */,
+  # 			);
+  # 			defaultConfigurationIsVisible = 0;
+  # 			defaultConfigurationName = Release;
+  # 		};
+  # 		0225CCDF204BECF700273B48 /* Build configuration list for PBXNativeTarget "Maze" */ = {
+  # 			isa = XCConfigurationList;
+  # 			buildConfigurations = (
+  # 				0225CCE0204BECF700273B48 /* Debug */,
+  # 				0225CCE1204BECF700273B48 /* Release */,
+  # 			);
+  # 			defaultConfigurationIsVisible = 0;
+  # 			defaultConfigurationName = Release;
+  # 		};
+  # 		0225CD04204BF7F800273B48 /* Build configuration list for PBXNativeTarget "MazeShareExtension" */ = {
+  # 			isa = XCConfigurationList;
+  # 			buildConfigurations = (
+  # 				0225CD05204BF7F800273B48 /* Debug */,
+  # 				0225CD06204BF7F800273B48 /* Release */,
+  # 			);
+  # 			defaultConfigurationIsVisible = 0;
+  # 			defaultConfigurationName = Release;
+  # 		};
+  # /* End XCConfigurationList section */
+  local pbxproj_path=$1
+  local config_list_id=$2
+  local configuration_list_section
+  local specific_config_list
+
+  # extract the entire XCConfigurationList section
+  configuration_list_section=$(awk '/\/\* Begin XCConfigurationList section \*\//,/\/* End XCConfigurationList section *\//' "$pbxproj_path")
+
+  # extract the specified configuration list
+  specific_config_list=$(echo "$configuration_list_section" | awk -v id="$config_list_id" -F ' = ' '$1 ~ id {flag=1; next} flag && /\);/ {flag=0} flag')
+
+  # extract the configuration IDs and names
+  while IFS= read -r line; do
+    if [[ $line =~ ([A-Za-z0-9]+)[[:space:]]+/\*[[:space:]]+(.+)[[:space:]]+\*\/ ]]; then
+      local config_id="${BASH_REMATCH[1]}"
+      local config_name="${BASH_REMATCH[2]}"
+      echo "\"$config_id\":\"$config_name\""
+    fi
+  done <<<"$specific_config_list"
+}
+
+# Get the build settings for a given configuration id.
+# - Arguments:
+#   - $1: The path to the .pbxproj file.
+#   - $2: The configuration id.
+#   - $3: The setting name.
+# - Output:
+#   - The build setting value.
+# - Example:
+#   get_build_setting /path/to/project.pbxproj 0225CCDE204BECF700273B48 MARKETING_VERSION
+#   get_build_setting /path/to/project.pbxproj 0225CCDE204BECF700273B48 INFOPLIST_FILE
+get_build_setting() {
+  local pbxproj_path=$1
+  local config_id=$2
+  local setting_name=$3
+  local build_settings_section
+  build_settings_section=$(awk "/$config_id \/\* /,/\};/" "$pbxproj_path")
+
+  # E5097DBE2890E0DA00DF5D57 /* Debug */ = {
+  # 			isa = XCBuildConfiguration;
+  # 			buildSettings = {
+  # 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+  # 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+  # 				CODE_SIGN_ENTITLEMENTS = "say-no-to-notch/Supporting Files/say-no-to-notch.entitlements";
+  # 				CODE_SIGN_IDENTITY = "-";
+  # 				CODE_SIGN_STYLE = Automatic;
+  # 				COMBINE_HIDPI_IMAGES = YES;
+  # 				CURRENT_PROJECT_VERSION = 8;
+  # 				DEVELOPMENT_TEAM = UYW9ZSKZAQ;
+  # 				ENABLE_HARDENED_RUNTIME = YES;
+  # 				GENERATE_INFOPLIST_FILE = YES;
+  # 				INFOPLIST_FILE = "say-no-to-notch/Supporting Files/Info.plist";
+  # 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+  # 				INFOPLIST_KEY_LSUIElement = NO;
+  # 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © ibluebox. All rights reserved.";
+  # 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+  # 				INFOPLIST_KEY_NSPrincipalClass = Say_No_to_Notch.Application;
+  # 				LD_RUNPATH_SEARCH_PATHS = (
+  # 					"$(inherited)",
+  # 					"@executable_path/../Frameworks",
+  # 				);
+  # 				MARKETING_VERSION = 1.1;
+  # 				PRODUCT_BUNDLE_IDENTIFIER = "com.ibluebox.say-no-to-notch";
+  # 				PRODUCT_NAME = "$(TARGET_NAME)";
+  # 				SWIFT_EMIT_LOC_STRINGS = YES;
+  # 				SWIFT_VERSION = 5.0;
+  # 			};
+  # 				E5097DBE2890E0DA00DF5D57 /* Debug */,
+  # 				E5097DBF2890E0DA00DF5D57 /* Release */,
+  # 			);
+  # 			defaultConfigurationIsVisible = 0;
+  # 			defaultConfigurationName = Release;
+  # 		};
+
+  # echo "$build_settings_section"
+
+  local value
+  # doesn't work for INFOPLIST_FILE = "say-no-to-notch/Supporting Files/Info.plist"; because of the space
+  # value=$(echo "$build_settings_section" | awk -v setting="$setting_name" '$1 == setting {print $3; exit}' | tr -d '";')
+
+  # this works for INFOPLIST_FILE = "say-no-to-notch/Supporting Files/Info.plist";
+  value=$(echo "$build_settings_section" | awk -v setting="$setting_name" '$1 == setting {print substr($0, index($0, $3)); exit}' | tr -d '";')
+
+  # remove quotes from the output
+  value="${value//\"/}"
+
+  echo "$value"
+}
+
+# Get the plist value for a given key.
+# - Arguments:
+#   - $1: The path to the plist file.
+#   - $2: The key.
+# - Output:
+#   - The plist value.
+# - Example:
+#   get_plist_value /path/to/Info.plist CFBundleShortVersionString
+get_plist_value() {
+  local plist_path=$1
+  local key=$2
+  if [[ ! -f $plist_path ]]; then
+    echo "🛑 No plist file found at $plist_path." >&2
+    exit 1
+  fi
+  /usr/libexec/PlistBuddy -c "Print $key" "$plist_path" 2>/dev/null
+}
