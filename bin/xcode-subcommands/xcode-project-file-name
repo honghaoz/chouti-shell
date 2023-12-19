@@ -1,0 +1,63 @@
+#!/bin/bash
+
+OVERVIEW="Print the name of the project in the current directory."
+
+print_help() {
+  echo "$(tput bold)OVERVIEW:$(tput sgr0) $OVERVIEW
+
+$(tput bold)USAGE:$(tput sgr0) xcode project-file-name [-w|--workspace]
+
+$(tput bold)OPTIONS:$(tput sgr0)
+
+  -w, --workspace      Find the workspace file name instead of the project file name.
+  -h, --help           Display this help message.
+  -v, --version        Print the version information.
+
+$(tput bold)EXAMPLES:$(tput sgr0)
+
+  $(tput setaf 2)- xcode project-file-name$(tput sgr0)
+    Print the project file name in the current directory.
+
+  $(tput setaf 2)- xcode project-file-name --workspace$(tput sgr0)
+    Print the workspace file name in the current directory.
+"
+}
+
+print_version() {
+  echo "0.1.0"
+}
+
+set -e
+
+directory=$(pwd)
+extension="xcodeproj"
+
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+  --workspace | -w)
+    extension="xcworkspace"
+    shift # past argument
+    ;;
+  --help | -h)
+    print_help
+    exit 0
+    ;;
+  --version | -v)
+    print_version
+    exit 0
+    ;;
+  *)
+    echo "🛑 Invalid argument: $key"
+    exit 1
+    ;;
+  esac
+done
+
+find "$directory" -maxdepth 1 -type d -name "*.$extension" -print0 | while read -r -d $'\0' file; do
+  basename "$file"
+done
+
+# References:
+# - https://github.com/macecchi/xcopen

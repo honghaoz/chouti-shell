@@ -1,0 +1,267 @@
+#!/bin/bash
+
+OVERVIEW="Print the marketing versions of targets in a project."
+
+print_help() {
+  echo "$(tput bold)OVERVIEW:$(tput sgr0) $OVERVIEW
+
+$(tput bold)USAGE:$(tput sgr0) xcode project-marketing-version [<project-name>]
+
+$(tput bold)ARGUMENTS:$(tput sgr0)
+
+  [<project-name>]     The name of the project to get the marketing version for.
+
+$(tput bold)OPTIONS:$(tput sgr0)
+
+  -h, --help           Display this help message.
+  -v, --version        Print the version information.
+
+$(tput bold)EXAMPLES:$(tput sgr0)
+
+  $(tput setaf 2)- xcode project-marketing-version$(tput sgr0)
+    Print the marketing version of the project in the current directory.
+"
+}
+
+print_version() {
+  echo "0.1.0"
+}
+
+set -e
+
+project_name=""
+project_name_set=false
+
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+  --help | -h)
+    print_help
+    exit 0
+    ;;
+  --version | -v)
+    print_version
+    exit 0
+    ;;
+  *)
+    if [[ $project_name_set == false ]]; then
+      project_name=$key
+      project_name_set=true
+      shift # past argument
+    else
+      echo "🛑 Invalid argument: $1"
+      exit 1
+    fi
+    ;;
+  esac
+done
+
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/../../lib/lib.sh"
+
+if [[ $project_name_set == false ]]; then
+  SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+  file_name=$("$SCRIPT_DIR/xcode-project-file-name" "$@")
+  # if the extension of the file_name is ".xcodeproj"
+  if [[ $file_name == *.xcodeproj ]]; then
+    # drop the extension
+    project_name=${file_name%.xcodeproj}
+  fi
+fi
+
+project_file_name="$project_name".xcodeproj
+pbxproj_path="$project_file_name"/project.pbxproj
+
+# confirm project_file_name exists
+if [[ ! -d $project_file_name ]]; then
+  echo "🛑 No project file named $project_file_name found in the current directory."
+  exit 1
+fi
+
+# get the target IDs and names, prints in the format:
+# "<target-id1>":"<target-name1>"
+# "<target-id2>":"<target-name2>"
+#
+# /* Begin PBXProject section */
+# 		0225CCC5204BECF700273B48 /* Project object */ = {
+# 			isa = PBXProject;
+# 			attributes = {
+# 				BuildIndependentTargetsInParallel = YES;
+# 				LastSwiftUpdateCheck = 1220;
+# 				LastUpgradeCheck = 1500;
+# 				ORGANIZATIONNAME = HonghaoZ;
+# 				TargetAttributes = {
+# 					0225CCCC204BECF700273B48 = {
+# 						CreatedOnToolsVersion = 9.2;
+# 						LastSwiftMigration = 1020;
+# 						SystemCapabilities = {
+# 							com.apple.ApplicationGroups.iOS = {
+# 								enabled = 1;
+# 							};
+# 						};
+# 					};
+# 					0225CCF8204BF7F800273B48 = {
+# 						CreatedOnToolsVersion = 9.2;
+# 						LastSwiftMigration = 1020;
+# 						SystemCapabilities = {
+# 							com.apple.ApplicationGroups.iOS = {
+# 								enabled = 1;
+# 							};
+# 						};
+# 					};
+# 				};
+# 			};
+# 			buildConfigurationList = 0225CCC8204BECF700273B48 /* Build configuration list for PBXProject "Wazer" */;
+# 			compatibilityVersion = "Xcode 8.0";
+# 			developmentRegion = en;
+# 			hasScannedForEncodings = 0;
+# 			knownRegions = (
+# 				en,
+# 				Base,
+# 			);
+# 			mainGroup = 0225CCC4204BECF700273B48;
+# 			packageReferences = (
+# 			);
+# 			productRefGroup = 0225CCCE204BECF700273B48 /* Products */;
+# 			projectDirPath = "";
+# 			projectRoot = "";
+# 			targets = (
+# 				0225CCCC204BECF700273B48 /* Maze */,
+# 				0225CCF8204BF7F800273B48 /* MazeShareExtension */,
+# 			);
+# 		};
+# /* End PBXProject section */
+get_targets() {
+  local targets_section
+  targets_section=$(awk '/targets = \(/ {flag=1; next} /\);/ {flag=0} flag' "$pbxproj_path")
+
+  while IFS= read -r line; do
+    if [[ $line =~ ([A-Za-z0-9]+)[[:space:]]+/\*[[:space:]]+(.+)[[:space:]]+\*/ ]]; then
+      target_id="${BASH_REMATCH[1]}"
+      target_name="${BASH_REMATCH[2]}"
+
+      echo "\"$target_id\":\"$target_name\""
+    fi
+  done < <(echo "$targets_section")
+}
+
+# get the buildConfigurationList id for a given target id
+get_build_configuration_list_id() {
+  local target_id=$1
+  local config_list_id
+  config_list_id=$(awk "/$target_id \/\* /,/\};/" "$pbxproj_path" | grep "buildConfigurationList = " | awk -F ' = ' '{print $2}' | cut -d ' ' -f 1)
+  echo "$config_list_id"
+}
+
+# get the configuration ids from a buildConfigurationList id, prints in the format:
+# "<config-id1>":"<config-name1>"
+# "<config-id2>":"<config-name2>"
+#
+# /* Begin XCConfigurationList section */
+# 		0225CCC8204BECF700273B48 /* Build configuration list for PBXProject "Wazer" */ = {
+# 			isa = XCConfigurationList;
+# 			buildConfigurations = (
+# 				0225CCDD204BECF700273B48 /* Debug */,
+# 				0225CCDE204BECF700273B48 /* Release */,
+# 			);
+# 			defaultConfigurationIsVisible = 0;
+# 			defaultConfigurationName = Release;
+# 		};
+# 		0225CCDF204BECF700273B48 /* Build configuration list for PBXNativeTarget "Maze" */ = {
+# 			isa = XCConfigurationList;
+# 			buildConfigurations = (
+# 				0225CCE0204BECF700273B48 /* Debug */,
+# 				0225CCE1204BECF700273B48 /* Release */,
+# 			);
+# 			defaultConfigurationIsVisible = 0;
+# 			defaultConfigurationName = Release;
+# 		};
+# 		0225CD04204BF7F800273B48 /* Build configuration list for PBXNativeTarget "MazeShareExtension" */ = {
+# 			isa = XCConfigurationList;
+# 			buildConfigurations = (
+# 				0225CD05204BF7F800273B48 /* Debug */,
+# 				0225CD06204BF7F800273B48 /* Release */,
+# 			);
+# 			defaultConfigurationIsVisible = 0;
+# 			defaultConfigurationName = Release;
+# 		};
+# /* End XCConfigurationList section */
+get_configurations() {
+  local config_list_id=$1
+  local configuration_list_section
+  local specific_config_list
+
+  # extract the entire XCConfigurationList section
+  configuration_list_section=$(awk '/\/\* Begin XCConfigurationList section \*\//,/\/* End XCConfigurationList section *\//' "$pbxproj_path")
+
+  # extract the specified configuration list
+  specific_config_list=$(echo "$configuration_list_section" | awk -v id="$config_list_id" -F ' = ' '$1 ~ id {flag=1; next} flag && /\);/ {flag=0} flag')
+
+  # extract the configuration IDs and names
+  while IFS= read -r line; do
+    if [[ $line =~ ([A-Za-z0-9]+)[[:space:]]+/\*[[:space:]]+(.+)[[:space:]]+\*\/ ]]; then
+      local config_id="${BASH_REMATCH[1]}"
+      local config_name="${BASH_REMATCH[2]}"
+      echo "\"$config_id\":\"$config_name\""
+    fi
+  done <<<"$specific_config_list"
+}
+
+# extract the marketing version for a given configuration id
+get_marketing_version() {
+  local config_id=$1
+  local version
+  version=$(awk "/$config_id \/\* /,/\};/" "$pbxproj_path" | grep MARKETING_VERSION | awk -F '= ' '{print $2}' | tr -d ';')
+  echo "$version"
+}
+
+declare -a target_ids
+declare -a target_names
+
+while IFS=':' read -r target_id target_name; do
+  # remove quotes from the output
+  target_id="${target_id//\"/}"
+  target_name="${target_name//\"/}"
+
+  target_ids+=("$target_id")
+  target_names+=("$target_name")
+done < <(get_targets)
+
+# iterate over target IDs and get their marketing versions
+for i in "${!target_ids[@]}"; do
+  target_name="${target_names[$i]}"
+  target_id="${target_ids[$i]}"
+  config_list_id=$(get_build_configuration_list_id "$target_id")
+
+  echo "$target_name:"
+
+  unset -v config_ids
+  unset -v config_names
+  declare -a config_ids
+  declare -a config_names
+
+  while IFS=':' read -r config_id config_name; do
+    # remove quotes from the output
+    config_id="${config_id//\"/}"
+    config_name="${config_name//\"/}"
+
+    config_ids+=("$config_id")
+    config_names+=("$config_name")
+  done < <(get_configurations "$config_list_id")
+
+  # iterate over configuration IDs and get their marketing versions
+  for j in "${!config_ids[@]}"; do
+    config_name="${config_names[$j]}"
+    config_id="${config_ids[$j]}"
+
+    version=$(get_marketing_version "$config_id")
+
+    printf "* %s: %s\n" "$config_name" "$version"
+  done
+
+done
+
+# References:
+# - https://medium.com/flawless-app-stories/how-to-handle-marketing-version-of-xcode-11-by-ci-db64a0ac71b9
+# - https://github.com/macecchi/xcopen/blob/master/xcopen

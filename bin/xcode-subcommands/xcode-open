@@ -1,0 +1,64 @@
+#!/bin/bash
+
+OVERVIEW="Open the project file in the current directory."
+
+print_help() {
+  echo "$(tput bold)OVERVIEW:$(tput sgr0) $OVERVIEW
+
+$(tput bold)USAGE:$(tput sgr0) xcode open [-w|--workspace]
+
+$(tput bold)OPTIONS:$(tput sgr0)
+
+  -w, --workspace      Open the workspace file instead of the project file.
+  -h, --help           Display this help message.
+  -v, --version        Print the version information.
+
+$(tput bold)EXAMPLES:$(tput sgr0)
+
+  $(tput setaf 2)- xcode open$(tput sgr0)
+    Open the project file in the current directory.
+
+  $(tput setaf 2)- xcode open --workspace$(tput sgr0)
+    Open the workspace file in the current directory.
+"
+}
+
+print_version() {
+  echo "0.1.0"
+}
+
+set -e
+
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+  --help | -h)
+    print_help
+    exit 0
+    ;;
+  --version | -v)
+    print_version
+    exit 0
+    ;;
+  *)
+    break
+    ;;
+  esac
+done
+
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/../../lib/lib.sh"
+
+CURRENT_DIR=$(pwd)
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+
+file_name=$("$SCRIPT_DIR/xcode-project-file-name" "$@")
+
+if [[ $file_name == "" ]]; then
+  echo "🛑 No project file found in the current directory."
+  exit 1
+fi
+
+echo "Opening $GREEN$file_name$NORMAL..."
+command open "$CURRENT_DIR/$file_name"

@@ -262,3 +262,6 @@ cd "$current_dir" || (echo "Failed to navigate to $current_dir" && exit 1)
 
 # References:
 # - https://liamnichols.eu/2020/08/01/building-swift-packages-as-a-universal-binary.html
+# - https://scriptingosx.com/category/swift/
+# - build swift files directly: 
+#   - `xcrun -sdk macosx swiftc main.swift -o executable`
