@@ -1,11 +1,11 @@
 #!/bin/bash
 
-OVERVIEW="Print the marketing versions of targets in a project."
+OVERVIEW="Print the versions of targets in a project."
 
 print_help() {
   echo "$(tput bold)OVERVIEW:$(tput sgr0) $OVERVIEW
 
-$(tput bold)USAGE:$(tput sgr0) xcode project-marketing-version [<project-name>]
+$(tput bold)USAGE:$(tput sgr0) xcode project-versions [<project-name>]
 
 $(tput bold)ARGUMENTS:$(tput sgr0)
 
@@ -15,15 +15,15 @@ $(tput bold)ARGUMENTS:$(tput sgr0)
 
 $(tput bold)OPTIONS:$(tput sgr0)
 
-  --all-targets        Print the marketing versions of all targets. By default, 
-                       only application targets and app extensions are printed.
+  --all-targets        Print the versions of all targets. By default, only 
+                       application targets and app extensions are printed.
   -h, --help           Display this help message.
   -v, --version        Print the version information.
 
 $(tput bold)EXAMPLES:$(tput sgr0)
 
-  $(tput setaf 2)- xcode project-marketing-version$(tput sgr0)
-    Print the marketing version of the project in the current directory.
+  $(tput setaf 2)- xcode project-versions$(tput sgr0)
+    Print the versions of targets in the project in the current directory.
 "
 }
 
@@ -103,6 +103,10 @@ get_marketing_version() {
   get_section_data "$pbxproj_path" "$1" "MARKETING_VERSION"
 }
 
+get_build_number() {
+  get_section_data "$pbxproj_path" "$1" "CURRENT_PROJECT_VERSION"
+}
+
 get_product_type() {
   get_section_data "$pbxproj_path" "$1" "productType"
   # com.apple.product-type.application
@@ -163,6 +167,7 @@ for i in "${!target_ids[@]}"; do
     config_id="${config_ids[$j]}"
 
     project_version=$(get_marketing_version "$config_id")
+    build_number=$(get_build_number "$config_id")
 
     info_plist_path=$(get_info_plist_path "$config_id")
     # replace $(TARGET_NAME) with the actual target name
@@ -175,12 +180,24 @@ for i in "${!target_ids[@]}"; do
     if [[ $? -ne 0 ]]; then
       has_version_in_info_plist=false
     fi
+    info_plist_build_number=$(get_plist_value "$info_plist_path" "CFBundleVersion")
     set -e
 
     printf "-"
-    printf " %s:\n  - Project: %s\n" "$config_name" "$project_version"
+    printf " %s:\n  - Project: %s" "$config_name" "$project_version"
+    if [[ $build_number != "" ]]; then
+      printf " (%s)\n" "$build_number"
+    else
+      printf "\n"
+    fi
+
     if [[ $has_version_in_info_plist == true ]]; then
-      printf "  - Info.plist: %s\n" "$info_plist_version"
+      printf "  - Info.plist: %s" "$info_plist_version"
+      if [[ $info_plist_build_number != "" ]]; then
+        printf " (%s)\n" "$info_plist_build_number"
+      else
+        printf "\n"
+      fi
     fi
   done
 
