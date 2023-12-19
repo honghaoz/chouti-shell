@@ -138,10 +138,18 @@ for i in "${!target_ids[@]}"; do
     info_plist_path=$(get_info_plist_path "$config_id")
 
     set +e
+    has_version_in_info_plist=true
     info_plist_version=$(get_plist_value "$info_plist_path" "CFBundleShortVersionString")
+    # shellcheck disable=SC2181
+    if [[ $? -ne 0 ]]; then
+      has_version_in_info_plist=false
+    fi
     set -e
 
-    printf "* %s:\n  * Project: %s\n  * Info.plist: %s\n" "$config_name" "$project_version" "$info_plist_version"
+    printf "* %s:\n  * Project: %s\n" "$config_name" "$project_version"
+    if [[ $has_version_in_info_plist == true ]]; then
+      printf "  * Info.plist: %s\n" "$info_plist_version"
+    fi
   done
 
 done
