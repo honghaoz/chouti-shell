@@ -20,7 +20,7 @@ if [[ ! -d /usr/local/lib ]]; then
 fi
 
 # create symbolic links for chouti
-# 
+#
 # if is normal folder, give out warings
 #   if is symlink, check if it is pointing to the right place
 #     if is not pointing to the right place, give out warings
@@ -43,18 +43,18 @@ if [[ -L "$SYMLINK_DIR" ]]; then
     echo "✅ $LIB_NAME is already installed."
   else
     # different link
-    echo "🛑 $SYMLINK_DIR already exists. It is a symlink pointing to $SYMLINK_TARGET. Can't install $LIB_NAME."
+    echo "🛑 $SYMLINK_DIR already exists. It is a symlink pointing to $SYMLINK_TARGET. Can't install $LIB_NAME." >&2
   fi
 elif [[ -d "$SYMLINK_DIR" ]]; then
   # is normal folder
-  echo "🛑 $SYMLINK_DIR already exists. It is a normal folder. Can't install $LIB_NAME."
+  echo "🛑 $SYMLINK_DIR already exists. It is a normal folder. Can't install $LIB_NAME." >&2
 elif [[ -e "$SYMLINK_DIR" ]]; then
   # is file
-  echo "🛑 $SYMLINK_DIR already exists. It is a file. Can't install $LIB_NAME."
+  echo "🛑 $SYMLINK_DIR already exists. It is a file. Can't install $LIB_NAME." >&2
 else
   # no folder
   echo "➡️  Install $LIB_NAME..."
-  
+
   # check if there's sudo privilege
   if sudo -n true 2>/dev/null; then
     sudo ln -s "$DESTINATION_DIR" "$SYMLINK_DIR"
@@ -68,7 +68,7 @@ else
   if [[ $? -eq 0 ]]; then
     echo "✅ $LIB_NAME installed successfully. Made a symbolic link: $SYMLINK_DIR -> $DESTINATION_DIR"
   else
-    echo "🛑 Failed to install $LIB_NAME."
+    echo "🛑 Failed to install $LIB_NAME." >&2
   fi
 fi
 

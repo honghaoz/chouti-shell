@@ -55,7 +55,7 @@ while [[ $# -gt 0 ]]; do
       path=$key
       path_set=true
     else
-      echo "🛑 Invalid argument: $1"
+      echo "🛑 Invalid argument: $1" >&2
       exit 1
     fi
     shift # past argument
@@ -65,7 +65,7 @@ done
 
 # exit if no path
 if [[ -z "$path" ]]; then
-  echo "🛑 No path specified."
+  echo "🛑 No path specified." >&2
   exit 1
 fi
 

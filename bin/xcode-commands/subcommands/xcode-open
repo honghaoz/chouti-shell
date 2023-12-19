@@ -58,7 +58,7 @@ SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 file_name=$("$SCRIPT_DIR/xcode-project-file-name" "$@")
 
 if [[ $file_name == "" ]]; then
-  echo "🛑 No project file found in the current directory."
+  echo "🛑 No project file found in the current directory." >&2
   exit 1
 fi
 

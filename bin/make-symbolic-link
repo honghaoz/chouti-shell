@@ -67,12 +67,12 @@ while [[ $# -gt 0 ]]; do
       elif [[ $symlink_path == "" ]]; then
         symlink_path="$1"
       else
-        echo "🛑 Unexpected argument: $1"
+        echo "🛑 Unexpected argument: $1" >&2
         exit 1
       fi
       shift # past argument
     else
-      echo "🛑 Unknown option: $1"
+      echo "🛑 Unknown option: $1" >&2
       exit 1
     fi
     ;;
@@ -81,19 +81,19 @@ done
 
 # if no destination path, exit
 if [[ $destination_path == "" ]]; then
-  echo "🛑  No destination path provided."
+  echo "🛑 No destination path provided." >&2
   exit 1
 fi
 
 # if no symlink path, exit
 if [[ $symlink_path == "" ]]; then
-  echo "🛑  No symlink path provided."
+  echo "🛑 No symlink path provided." >&2
   exit 1
 fi
 
 # if destination path doesn't exist, skip
 if [[ ! -e "$destination_path" ]]; then
-  echo "🛑  Destination path doesn't exist: $destination_path"
+  echo "🛑 Destination path doesn't exist: $destination_path" >&2
   exit 1
 fi
 

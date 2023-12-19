@@ -58,7 +58,7 @@ while [[ $# -gt 0 ]]; do
       project_name_set=true
       shift # past argument
     else
-      echo "🛑 Invalid argument: $1"
+      echo "🛑 Invalid argument: $1" >&2
       exit 1
     fi
     ;;
@@ -80,7 +80,7 @@ pbxproj_path="$project_file_name"/project.pbxproj
 
 # confirm project_file_name exists
 if [[ ! -d $project_file_name ]]; then
-  echo "🛑 No project file named $project_file_name found in the current directory."
+  echo "🛑 No project file named $project_file_name found in the current directory." >&2
   exit 1
 fi
 

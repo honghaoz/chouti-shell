@@ -9,7 +9,7 @@ elif [[ -n "$ZSH_VERSION" ]]; then
   # https://stackoverflow.com/questions/18810483/what-is-the-zsh-equivalent-of-a-bash-script-getting-the-scripts-directory
   SCRIPT_DIR=${0:a:h}
 else
-  echo "🛑 Unsupported shell: $SHELL."
+  echo "🛑 Unsupported shell: $SHELL." >&2
   exit 1
 fi
 

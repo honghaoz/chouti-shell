@@ -54,7 +54,7 @@ while [[ $# -gt 0 ]]; do
       length="$1"
       length_set=true
     else
-      echo "🛑 Invalid argument: $1"
+      echo "🛑 Invalid argument: $1" >&2
       exit 1
     fi
     shift # past argument
@@ -65,13 +65,13 @@ done
 if [[ $length =~ ^[0-9]+$ ]]; then
   :
 else
-  echo "🛑 Invalid length: $length"
+  echo "🛑 Invalid length: $length" >&2
   exit 1
 fi
 
 # make sure length is at least 5
 if [[ $length -lt 20 ]]; then
-  echo "🛑 Invalid length: $length"
+  echo "🛑 Invalid length: $length" >&2
   exit 1
 fi
 
@@ -91,7 +91,7 @@ half_length=$((total_length / 2))
 half_print=$(printf '=%.0s' $(seq 1 "$half_length"))
 
 # Adjust if total_length is odd
-if (( total_length % 2 != 0 )); then
+if ((total_length % 2 != 0)); then
   echo "$half_print $length $half_print="
 else
   echo "$half_print $length $half_print"
