@@ -46,7 +46,7 @@ print_version() {
 }
 
 # shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]}")/../lib/lib.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
 # Constants
 DEFAULT_INSTALL_PATH="/usr/local/bin"

@@ -40,7 +40,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 # shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]}")/../lib/lib.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
 
 destination_path=""
 symlink_path=""

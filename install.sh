@@ -6,12 +6,12 @@ pushd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 || exit 1
 # ===------ BEGIN ------===
 
 # OVERVIEW
-# This script installs chouti (shell lib) into /usr/local/lib
+# This script installs chouti-shell binaries.
 
-set -e # exit immediately if a command exits with a non-zero status.
+set -e
 
-./install-lib.sh
 ./install-bin.sh
+# ./install-lib.sh
 
 # ===------ END ------===
 
