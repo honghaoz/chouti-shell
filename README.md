@@ -20,19 +20,36 @@ Shell library and binaries.
 
 ## Usage
 
+### Use binaries
+
+Just execute the binaries in `~/.chouti-shell/bin`:
+
+For example, to use `swift-build`, run:
+
+```bash
+swift-build --arch arm64 --install usr/local/bin
+```
+
+### Use shell library
+
 1. Add the following lines to the top of your shell script:
 
-    ```bash
-    # shellcheck disable=SC1091
-    source "$HOME/.chouti-shell/lib/lib.sh" || exit 1
-    ```
-
-2. Use utility functions in your script, such as `prompt`:
     ```bash
     #!/bin/bash
 
     # shellcheck disable=SC1091
-    source "$HOME/.chouti-shell/lib/lib.sh" || exit 1
+    source "$HOME/.chouti-shell/lib.sh" || exit 1
+    ```
 
-    prompt "Are you sure you want to continue?" "echo 'Yes'" "echo 'No'" "echo 'Too many attempts'"
+2. Use utility functions in your script, such as `prompt`:
+
+    ```bash
+    reply=""
+    prompt "Do you want to continue?" "reply=\"y\"" "reply=\"n\"" "reply=\"n\""
+
+    if [[ "$reply" == "y" ]]; then
+        to continue...
+    else
+        to exit...
+    fi
     ```
