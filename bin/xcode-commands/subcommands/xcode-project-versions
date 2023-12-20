@@ -23,7 +23,7 @@ $(tput bold)OPTIONS:$(tput sgr0)
 $(tput bold)EXAMPLES:$(tput sgr0)
 
   $(tput setaf 2)- xcode project-versions$(tput sgr0)
-    Print the versions of targets in the project in the current directory.
+    Print the versions of app targets in the project in the current directory.
 "
 }
 

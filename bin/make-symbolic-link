@@ -31,6 +31,8 @@ print_version() {
   echo "0.1.0"
 }
 
+set -e
+
 # print help if no arguments
 if [[ $# -eq 0 ]]; then
   print_help
@@ -92,22 +94,28 @@ if [[ $symlink_path == "" ]]; then
 fi
 
 # if destination path doesn't exist, skip
+# because the destination path could be a relative path, needs to cd to the 
+# symlink path's directory to check if the destination path exists
+current_dir=$(pwd)
+symlink_realpath=$(realpath --no-symlinks "$symlink_path")
+cd "$(dirname "$symlink_realpath")" || exit 1
 if [[ ! -e "$destination_path" ]]; then
   echo "🛑 Destination path doesn't exist: $destination_path" >&2
   exit 1
 fi
+cd "$current_dir" || exit 1
 
 function backup-symlink-path() {
+  symlink_path_backup=$(rotate-path "$symlink_path" --suffix "-backup")
   if [[ $no_backup == true ]]; then
-    rm -rf "$symlink_path"
+    mv "$symlink_path" "$symlink_path_backup"
     return
   fi
 
-  backup_path=$(rotate-path "$symlink_path" "-backup")
-  echo "➡️  Rename '$symlink_path' to '$backup_path'"
-  mv "$symlink_path" "$backup_path"
+  echo "➡️  Rename '$symlink_path' to '$symlink_path_backup'"
+  mv "$symlink_path" "$symlink_path_backup"
   clear-line
-  echo "✅ Renamed '$symlink_path' to '$backup_path'"
+  echo "✅ Renamed '$symlink_path' to '$symlink_path_backup'"
 }
 
 if [[ -e "$symlink_path" && ! -L "$symlink_path" ]]; then
@@ -143,4 +151,11 @@ if [[ $should_create_link == true ]]; then
   echo "✅ Created symlink: $(tput setaf 6)$symlink_path$(tput sgr0) -> $destination_path"
 else
   echo "✅ Already linked: $(tput setaf 6)$symlink_path$(tput sgr0) -> $destination_path"
+fi
+
+if [[ $no_backup == true ]]; then
+  # clean up symlink_path_backup
+  if [[ -e "$symlink_path_backup" ]]; then
+    rm -rf "$symlink_path_backup"
+  fi
 fi
