@@ -26,12 +26,6 @@ if [[ ! -d "$bin_path" ]]; then
   exit 1
 fi
 
-# check if bin path is already in $PATH
-if [[ ":$PATH:" == *":$PWD/bin:"* ]]; then
-  echo "✅ $user_friendly_bin_path is already in \$PATH."
-  exit 0
-fi
-
 if [[ $SHELL == *"bash"* ]]; then
   shell_config_file=~/.bashrc
 elif [[ $SHELL == *"zsh"* ]]; then
@@ -39,6 +33,13 @@ elif [[ $SHELL == *"zsh"* ]]; then
 else
   echo "🛑 Unsupported shell: $SHELL." >&2
   exit 1
+fi
+
+path_content_to_add="export PATH=\"$user_friendly_bin_path:\$PATH\""
+
+if grep -q "$path_content_to_add" "$shell_config_file"; then
+  echo "✅ $user_friendly_bin_path already exists \$PATH in $shell_config_file."
+  exit 0
 fi
 
 echo "You can manuallly add $user_friendly_bin_path to \$PATH by adding following lines to your shell config file ($shell_config_file):"
@@ -53,10 +54,10 @@ echo "➡️  Adding $user_friendly_bin_path to \$PATH... in $shell_config_file"
 {
   echo ""
   echo "# chout-shell"
-  echo "export PATH=\"$bin_path:\$PATH\""
+  echo "$path_content_to_add"
 } >>"$shell_config_file"
 clear-line
-echo "✅ Added $user_friendly_bin_path to \$PATH. Restart your terminal to take effect."
+echo "✅ Added $user_friendly_bin_path to \$PATH in $shell_config_file.. Restart your terminal to take effect."
 
 # ===------ END ------===
 
