@@ -133,7 +133,7 @@ done
 if [[ $package_dir_set == false ]]; then
   package_dir=$(pwd)
 fi
-package_dir=$(realpath "$package_dir")
+package_dir=$(_ct_grealpath "$package_dir")
 
 if [[ $config_set == false ]]; then
   config="release"
@@ -153,7 +153,7 @@ if [[ -n $install_dir ]]; then
   should_install=true
 fi
 if [[ $should_install == true ]]; then
-  install_dir=$(realpath "$install_dir")
+  install_dir=$(_ct_grealpath "$install_dir")
 fi
 
 # sanity check
@@ -203,7 +203,7 @@ elif [[ $config == "release" ]]; then
 fi
 
 cd "$artifact_dir" || (echo "Failed to navigate to $artifact_dir" && exit 1)
-executable_path=$(realpath "$(find . -maxdepth 1 -perm -111 -type f)")
+executable_path=$(_ct_grealpath "$(find . -maxdepth 1 -perm -111 -type f)")
 executable_name=$(basename "$executable_path")
 
 echo ""

@@ -97,7 +97,7 @@ fi
 # because the destination path could be a relative path, needs to cd to the 
 # symlink path's directory to check if the destination path exists
 current_dir=$(pwd)
-symlink_realpath=$(realpath --no-symlinks "$symlink_path")
+symlink_realpath=$(_ct_grealpath --no-symlinks "$symlink_path")
 cd "$(dirname "$symlink_realpath")" || exit 1
 if [[ ! -e "$destination_path" ]]; then
   echo "🛑 Destination path doesn't exist: $destination_path" >&2
