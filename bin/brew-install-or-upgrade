@@ -1,0 +1,119 @@
+#!/bin/bash
+
+print_help() {
+  echo "$(tput bold)OVERVIEW:$(tput sgr0) Install or upgrade a package using Homebrew.
+
+$(tput bold)USAGE:$(tput sgr0) $(basename "$0") [--verbose] <package-name>
+
+$(tput bold)ARGUMENTS:$(tput sgr0)
+
+  package-name   Name of the package to install or upgrade.
+
+$(tput bold)OPTIONS:$(tput sgr0)
+
+  --verbose      Print verbose output.
+  -h, --help     Display this help message.
+  -v, --version  Print the version information.
+
+$(tput bold)EXAMPLES:$(tput sgr0)
+
+  $(tput setaf 2)- $(basename "$0") swiftformat$(tput sgr0)
+    Install or upgrade swiftformat using Homebrew.
+"
+}
+
+print_version() {
+  echo "0.1.0"
+}
+
+set -e
+
+# print help if no arguments
+if [[ $# -eq 0 ]]; then
+  print_help
+  exit 1
+fi
+
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/../lib.sh"
+
+verbose=false
+package=""
+package_set=false
+
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+  --verbose)
+    verbose=true
+    shift # past argument
+    ;;
+  --help | -h)
+    print_help
+    exit 0
+    ;;
+  --version | -v)
+    print_version
+    exit 0
+    ;;
+  *)
+    if [[ -n $1 && ${1:0:1} != '-' ]]; then # if there is an argument and that it doesn't start with a "-"
+      if [[ $package_set == false ]]; then
+        package=$key
+        package_set=true
+      else
+        echo "🛑 Invalid argument: $1" >&2
+        exit 1
+      fi
+      shift # past argument
+    else
+      echo "🛑 Invalid option: $1" >&2
+      exit 1
+    fi
+    ;;
+  esac
+done
+
+if ! command-exists "brew"; then
+  echo "⚠️  brew is not installed. Please install: https://brew.sh/"
+  exit 1
+fi
+
+$verbose && echo "➡️  brew install or upgrade: ${GREEN}$package${NORMAL}"
+
+# fetch new versions
+brew update >/dev/null 2>&1
+
+# verify if the package is installed
+if brew list "$package" >/dev/null 2>&1; then
+  is_installed=true
+else
+  is_installed=false
+fi
+
+# verify if the package is updated
+if brew outdated "$package" >/dev/null 2>&1; then
+  is_updated=true
+else
+  is_updated=false
+fi
+
+if [[ $is_installed != "true" ]]; then
+  # to install
+  $verbose && echo "➡️  ${GREEN}$package${NORMAL} is not installed. installing..."
+  brew install "$package"
+  echo "✅ ${GREEN}$package${NORMAL} is installed."
+elif [[ $is_updated != "true" ]]; then
+  # to upgrade
+  $verbose && echo "➡️  ${GREEN}$package${NORMAL} is outdated. upgrading..."
+  brew upgrade "$package"
+  echo "✅ ${GREEN}$package${NORMAL} is upgraded."
+else
+  # do nothing
+  $verbose && echo "✅ ${GREEN}$package${NORMAL} is already updated."
+  exit 0
+fi
+
+# Reference:
+# https://stackoverflow.com/a/40535829/3164091
