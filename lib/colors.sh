@@ -227,6 +227,40 @@ function print-colors() {
   echo "${BG_CYAN}BG_CYAN${NORMAL}\t\t\${BG_CYAN}BG_CYAN\${NORMAL}"
 }
 
+function print-colors-tput() {
+  echo "$(tput sgr0)NORMAL$(tput sgr0)\t\t\$(tput sgr0)NORMAL\$(tput sgr0)"
+  echo "$(tput bold)BOLD$(tput sgr0)\t\t\$(tput bold)BOLD\$(tput sgr0)"
+  echo "$(tput dim)DIM$(tput sgr0)\t\t\$(tput dim)DIM\$(tput sgr0)"
+  echo "$(tput smul)UNDERLINE$(tput sgr0)\t\$(tput smul)UNDERLINE\$(tput sgr0)"
+  echo "$(tput blink)BLINK$(tput sgr0)\t\t\$(tput blink)BLINK\$(tput sgr0)"
+  echo "$(tput rev)REVERSE$(tput sgr0)\t\t\$(tput rev)REVERSE\$(tput sgr0)"
+  echo "$(tput invis)HIDDEN$(tput sgr0)\t\t\$(tput invis)HIDDEN\$(tput sgr0)"
+
+  echo ""
+
+  echo "$(tput setaf 0)BLACK$(tput sgr0)\t\t\$(tput setaf 0)BLACK\$(tput sgr0)"
+  echo "$(tput setaf 8)LIGHTGRAY$(tput sgr0)\t\$(tput setaf 8)LIGHTGRAY\$(tput sgr0)"
+  echo "$(tput setaf 7)WHITE$(tput sgr0)\t\t\$(tput setaf 7)WHITE\$(tput sgr0)"
+  echo "$(tput setaf 1)RED$(tput sgr0)\t\t\$(tput setaf 1)RED\$(tput sgr0)"
+  echo "$(tput setaf 2)GREEN$(tput sgr0)\t\t\$(tput setaf 2)GREEN\$(tput sgr0)"
+  echo "$(tput setaf 3)YELLOW$(tput sgr0)\t\t\$(tput setaf 3)YELLOW\$(tput sgr0)"
+  echo "$(tput setaf 4)BLUE$(tput sgr0)\t\t\$(tput setaf 4)BLUE\$(tput sgr0)"
+  echo "$(tput setaf 5)MEGENTA$(tput sgr0)\t\t\$(tput setaf 5)MEGENTA\$(tput sgr0)"
+  echo "$(tput setaf 6)CYAN$(tput sgr0)\t\t\$(tput setaf 6)CYAN\$(tput sgr0)"
+
+  echo ""
+
+  echo "$(tput setab 0)BG_BLACK$(tput sgr0)\t\$(tput setab 0)BG_BLACK\$(tput sgr0)"
+  echo "$(tput setab 8)BG_LIGHTGRAY$(tput sgr0)\t\$(tput setab 8)BG_LIGHTGRAY\$(tput sgr0)"
+  echo "$(tput setab 7)$(tput setaf 0)BG_WHITE$(tput sgr0)\t\$(tput setab 7)BG_WHITE\$(tput sgr0)"
+  echo "$(tput setab 1)BG_RED$(tput sgr0)\t\t\$(tput setab 1)BG_RED\$(tput sgr0)"
+  echo "$(tput setab 2)BG_GREEN$(tput sgr0)\t\$(tput setab 2)BG_GREEN\$(tput sgr0)"
+  echo "$(tput setab 3)BG_YELLOW$(tput sgr0)\t\$(tput setab 3)BG_YELLOW\$(tput sgr0)"
+  echo "$(tput setab 4)BG_BLUE$(tput sgr0)\t\t\$(tput setab 4)BG_BLUE\$(tput sgr0)"
+  echo "$(tput setab 5)BG_MEGENTA$(tput sgr0)\t\$(tput setab 5)BG_MEGENTA\$(tput sgr0)"
+  echo "$(tput setab 6)BG_CYAN$(tput sgr0)\t\t\$(tput setab 6)BG_CYAN\$(tput sgr0)"
+}
+
 # References:
 # https://linux.101hacks.com/ps1-examples/prompt-color-using-tput/
 # https://linuxcommand.org/lc3_adv_tput.php
