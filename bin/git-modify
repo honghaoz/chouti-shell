@@ -1,0 +1,98 @@
+#!/bin/bash
+
+print_help() {
+  echo "$(tput bold)OVERVIEW:$(tput sgr0) Modify the last git commit.
+
+$(tput bold)USAGE:$(tput sgr0) $(basename "$0") [options]
+
+$(tput bold)OPTIONS:$(tput sgr0)
+
+  --author-name <name>     Set the author's name for the last commit.
+  --author-email <email>   Set the author's email for the last commit.
+  --commit-date <date>     Set the date for the last commit (format: 'YYYY-MM-DD HH:MM:SS').
+  --message <message>      Set the commit message for the last commit.
+  -h, --help               Display this help message.
+  -v, --version            Print the version information.
+
+$(tput bold)EXAMPLES:$(tput sgr0)
+
+  $(tput setaf 2)- $(basename "$0") --author-name \"John Doe\" --author-email \"john.doe@example.com\" --commit-date \"$(date +"%Y-%m-%d %H:%M:%S")\" --message \"Updated commit details\"$(tput sgr0)
+    Modify the last commit with the specified author name, email, date, and message.
+"
+}
+
+print_version() {
+  echo "0.1.0"
+}
+
+set -e
+
+# print help if no arguments
+if [[ $# -eq 0 ]]; then
+  print_help
+  exit 1
+fi
+
+current_author_name=$(git log -1 --pretty=format:'%an')
+current_author_email=$(git log -1 --pretty=format:'%ae')
+current_commit_date=$(git log -1 --pretty=format:'%ad' --date=format:'%Y-%m-%d %H:%M:%S %z')
+
+author_name="$current_author_name"
+author_email="$current_author_email"
+commit_date="$current_commit_date"
+commit_message=""
+
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+  --author-name)
+    author_name="$2"
+    shift # past argument
+    shift # past value
+    ;;
+  --author-email)
+    author_email="$2"
+    shift # past argument
+    shift # past value
+    ;;
+  --commit-date)
+    commit_date=$(date -j -f "%Y-%m-%d %H:%M:%S" "$2" +"%Y-%m-%d %H:%M:%S %z")
+    shift # past argument
+    shift # past value
+    ;;
+  --message)
+    commit_message="$2"
+    shift # past argument
+    shift # past value
+    ;;
+  --help | -h)
+    print_help
+    exit 0
+    ;;
+  --version | -v)
+    print_version
+    exit 0
+    ;;
+  *)
+    echo "🛑 Invalid option: $1" >&2
+    exit 1
+    ;;
+  esac
+done
+
+if [[ -n "$author_name" ]]; then
+  export GIT_AUTHOR_NAME="$author_name"
+fi
+
+if [[ -n "$author_email" ]]; then
+  export GIT_AUTHOR_EMAIL="$author_email"
+fi
+
+if [[ -n "$commit_date" ]]; then
+  export GIT_COMMITTER_DATE="$commit_date"
+fi
+
+git commit --amend --no-edit ${author_name:+--author="$author_name <$author_email>"} ${commit_date:+--date="$commit_date"} ${commit_message:+-m "$commit_message"}
+
+echo "✅ Last commit modified successfully."
