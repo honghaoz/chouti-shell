@@ -10,12 +10,12 @@ $(tput bold)USAGE:$(tput sgr0) xcode project-versions [<project-name>]
 $(tput bold)ARGUMENTS:$(tput sgr0)
 
   [<project-name>]     The name of the project, not including the extension.
-                       If not specified, the project in the current directory 
+                       If not specified, the project in the current directory
                        is used.
 
 $(tput bold)OPTIONS:$(tput sgr0)
 
-  --all-targets        Print the versions of all targets. By default, only 
+  --all-targets        Print the versions of all targets. By default, only
                        application targets and app extensions are printed.
   -h, --help           Display this help message.
   -v, --version        Print the version information.
@@ -51,7 +51,7 @@ while [[ $# -gt 0 ]]; do
   case $key in
   --all-targets)
     all_targets=true
-    shift # past argument
+    shift # past option
     ;;
   --help | -h)
     print_help

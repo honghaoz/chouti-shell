@@ -22,7 +22,7 @@ $(tput bold)EXAMPLES:$(tput sgr0)
     Make a symbolic link at path/to/symlink that points to path/to/destination.
 
   $(tput setaf 2)- $(basename "$0") --no-backup path/to/destination path/to/symlink$(tput sgr0)
-    Make a symbolic link at path/to/symlink that points to path/to/destination, 
+    Make a symbolic link at path/to/symlink that points to path/to/destination,
     and overwrite existing symbolic link without backup.
 "
 }
@@ -52,7 +52,7 @@ while [[ $# -gt 0 ]]; do
   case $key in
   --no-backup)
     no_backup=true
-    shift # past argument
+    shift # past option
     ;;
   --help | -h)
     print_help
@@ -94,7 +94,7 @@ if [[ $symlink_path == "" ]]; then
 fi
 
 # if destination path doesn't exist, skip
-# because the destination path could be a relative path, needs to cd to the 
+# because the destination path could be a relative path, needs to cd to the
 # symlink path's directory to check if the destination path exists
 current_dir=$(pwd)
 symlink_realpath=$(_ct_grealpath --no-symlinks "$symlink_path")

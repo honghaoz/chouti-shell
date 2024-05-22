@@ -39,7 +39,7 @@ while [[ $# -gt 0 ]]; do
   case $key in
   --set-width)
     should_set_width=true
-    shift # past argument
+    shift # past option
     ;;
   --help | -h)
     print_help

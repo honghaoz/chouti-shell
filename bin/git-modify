@@ -48,22 +48,22 @@ while [[ $# -gt 0 ]]; do
   case $key in
   --author-name)
     author_name="$2"
-    shift # past argument
+    shift # past option
     shift # past value
     ;;
   --author-email)
     author_email="$2"
-    shift # past argument
+    shift # past option
     shift # past value
     ;;
   --commit-date)
     commit_date=$(date -j -f "%Y-%m-%d %H:%M:%S" "$2" +"%Y-%m-%d %H:%M:%S %z")
-    shift # past argument
+    shift # past option
     shift # past value
     ;;
   --message)
     commit_message="$2"
-    shift # past argument
+    shift # past option
     shift # past value
     ;;
   --help | -h)

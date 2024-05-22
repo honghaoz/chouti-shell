@@ -39,7 +39,7 @@ while [[ $# -gt 0 ]]; do
   case $key in
   --suffix)
     suffix="$2"
-    shift # past argument
+    shift # past option
     shift # past value
     ;;
   --help | -h)
