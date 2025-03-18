@@ -1,0 +1,107 @@
+#!/bin/bash
+
+print_help() {
+  echo "$(tput bold)OVERVIEW:$(tput sgr0) Run git interactive rebase command at a specific commit.
+
+$(tput bold)USAGE:$(tput sgr0) $(basename "$0") <REBASE_COMMAND> <COMMIT_HASH> [options]
+
+$(tput bold)REBASE_COMMAND:$(tput sgr0)
+
+  pick, p      Use the commit
+  reword, r    Use the commit, but edit the commit message
+  edit, e      Use the commit, but stop for amending
+  squash, s    Use the commit, but meld into previous commit
+  fixup, f     Like squash, but discard this commit's log message
+  exec, x      Run command using shell
+  break, b     Stop here (continue rebase later with 'git rebase --continue')
+  drop, d      Remove the commit
+  label, l     Label current HEAD with a name
+  reset, t     Reset HEAD to a label
+  merge, m     Create a merge commit using original merge commit's message
+
+$(tput bold)OPTIONS:$(tput sgr0)
+
+  -h, --help               Display this help message.
+  -v, --version            Print the version information.
+
+$(tput bold)EXAMPLES:$(tput sgr0)
+
+  $(tput setaf 2)- $(basename "$0") edit 1234567890$(tput sgr0)
+    Run git interactive rebase and edit at commit 1234567890.
+
+  $(tput setaf 2)- $(basename "$0") reword 1234567890$(tput sgr0)
+    Run git interactive rebase and reword at commit 1234567890.
+"
+}
+
+print_version() {
+  echo "0.0.1"
+}
+
+set -e
+
+# print help if no arguments
+if [[ $# -eq 0 ]]; then
+  print_help
+  exit 1
+fi
+
+# Parse options
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      print_help
+      exit 0
+      ;;
+    -v|--version)
+      print_version
+      exit 0
+      ;;
+    -*)
+      echo "❌ Unknown option: $1"
+      print_help
+      exit 1
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
+
+# Check if we have enough arguments
+if [[ $# -lt 2 ]]; then
+  echo "❌ Missing required arguments. Need both <REBASE_COMMAND> and <COMMIT_HASH>."
+  print_help
+  exit 1
+fi
+
+COMMAND="$1"
+COMMIT="$2"
+
+VALID_COMMANDS=("pick" "p" "reword" "r" "edit" "e" "squash" "s" "fixup" "f"
+                "exec" "x" "break" "b" "drop" "d" "label" "l" "reset" "t" "merge" "m")
+if [[ ! " ${VALID_COMMANDS[*]} " =~ " ${COMMAND} " ]]; then
+  echo "❌ Invalid rebase command: '$COMMAND'"
+  print_help
+  exit 1
+fi
+
+if [[ -z "$COMMIT" ]]; then
+  echo "❌ Invalid commit hash"
+  print_help
+  exit 1
+fi
+
+if ! git rev-parse "$COMMIT" > /dev/null 2>&1; then
+  echo "❌ Commit $COMMIT does not exist."
+  exit 1
+fi
+
+SHORT_COMMIT=$(git log -n1 --format="%h" "$COMMIT")
+if [ -z "$SHORT_COMMIT" ]; then
+  echo "❌ Failed to get the short commit hash."
+  exit 1
+fi
+
+GIT_SEQUENCE_EDITOR="sed -i -e \"/^pick $SHORT_COMMIT.* /s/pick/edit/\"" git rebase -i "$COMMIT^"

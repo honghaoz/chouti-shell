@@ -1,0 +1,49 @@
+#!/bin/bash
+
+print_help() {
+  echo "$(tput bold)OVERVIEW:$(tput sgr0) Run git interactive rebase and edit at a specific commit.
+
+$(tput bold)USAGE:$(tput sgr0) $(basename "$0") <COMMIT_HASH> [options]
+
+$(tput bold)OPTIONS:$(tput sgr0)
+
+  -h, --help               Display this help message.
+  -v, --version            Print the version information.
+
+$(tput bold)EXAMPLES:$(tput sgr0)
+
+  $(tput setaf 2)- $(basename "$0") 1234567890$(tput sgr0)
+    Run git interactive rebase and edit at commit 1234567890.
+"
+}
+
+print_version() {
+  echo "0.0.1"
+}
+
+set -e
+
+# print help if no arguments
+if [[ $# -eq 0 ]]; then
+  print_help
+  exit 1
+fi
+
+COMMIT="$1"
+
+if [[ -z "$COMMIT" ]]; then
+  echo "❌ Invalid commit hash"
+  print_help
+  exit 1
+fi
+
+if ! git rev-parse "$COMMIT" > /dev/null 2>&1; then
+  echo "❌ Commit $COMMIT does not exist."
+  exit 1
+fi
+SHORT_COMMIT=$(git log -n1 --format="%h" "$COMMIT")
+if [ -z "$SHORT_COMMIT" ]; then
+  echo "❌ Failed to get the short commit hash."
+  exit 1
+fi
+GIT_SEQUENCE_EDITOR="sed -i -e \"/^pick $SHORT_COMMIT.* /s/pick/edit/\"" git rebase -i "$COMMIT^"
