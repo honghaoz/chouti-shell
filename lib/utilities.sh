@@ -68,14 +68,14 @@ function prompt() {
       [Yy]* )
         echo ""
         eval "$YES_COMMAND"
-        break
+        return 0
         ;;
       [Nn]* )
         echo ""
         if [[ -n "$NO_COMMAND" ]]; then
           eval "$NO_COMMAND"
         fi
-        break
+        return 1
         ;;
       "" )
         # user typed newline, no need to print newline
@@ -96,6 +96,7 @@ function prompt() {
     if [[ -n "$SKIP_COMMAND" ]]; then
       eval "$SKIP_COMMAND"
     fi
+    return 1
   fi
 }
 
