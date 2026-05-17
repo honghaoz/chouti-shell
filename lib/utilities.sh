@@ -39,6 +39,18 @@ function run-command() {
 #   - $3: [optional] Command to run if user answers no.
 #   - $4: [optional] Command to run if user fails to answer after 3 attempts.
 # - Examples:
+#   if prompt "Do you want to run 'ls -l'?"; then ls -l; fi
+#
+#   if prompt "Do you want to run 'ls -l'?"; then ls -l; else echo "Skipping ls -l"; fi
+#
+#   ```
+#   if prompt "Do you want to run 'ls -l'?"; then
+#     ls -l
+#   else
+#     echo "Skipping ls -l"
+#   fi
+#   ```
+#
 #   prompt "Do you want to run 'ls -l'?" "ls -l"
 #   prompt "Do you want to run 'ls -l'?" "ls -l" "ls"
 #   prompt "Do you want to run 'ls -l'?" "ls -l" "ls" "ls -all"
